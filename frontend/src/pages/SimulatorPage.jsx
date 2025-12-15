@@ -6,6 +6,7 @@ import ResumenEstadistico from "../components/ResumenEstadistico";
 import FormularioParametros from "../components/FormularioParametros";
 import AnalisisRiesgo from "../components/AnalisisRiesgo";
 import EscenariosPoliticaFiscal from "../components/EscenariosPoliticaFiscal";
+import BotonesExportacion from "../components/BotonesExportacion";
 
 export default function SimulatorPage() {
   const [datos, setDatos] = useState(null);
@@ -153,6 +154,11 @@ export default function SimulatorPage() {
                 <EscenariosPoliticaFiscal datos={datos} />
               </div>
             )}
+
+            {/* Botones de Exportación - Al final */}
+            <div className="mt-12">
+              <BotonesExportacion datos={datos} vistaActiva={vistaActiva} />
+            </div>
           </>
         )}
 
