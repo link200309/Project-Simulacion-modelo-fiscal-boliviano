@@ -1,6 +1,6 @@
 # ==============================================================
 # MODELO FISCAL ESTOCÁSTICO – BOLIVIA (2020–2025)
-# VERSIÓN CORREGIDA
+# VERSIÓN CON SUBSIDIOS
 # ==============================================================
 
 import numpy as np
@@ -46,9 +46,20 @@ class Parametros:
     crecimiento_gas_base: float = 0.01  # tendencia base del gas (además de shocks)
 
     # ------------------------------
-    # Shocks (gas)
+    # Subsidios
+    # ------------------------------
+    subsidio_0: float = 12_000  # Subsidio inicial 2020 (millones Bs)
+    crecimiento_subsidio: float = 0.015  # Crecimiento tendencial
+    elasticidad_subsidio_pib: float = 0.8  # Sensibilidad al PIB
+    elasticidad_subsidio_precios: float = 1.2  # Sensibilidad a precios internacionales
+    reduccion_subsidio: float = 0.0  # % de reducción del subsidio (política fiscal)
+    tipo_reduccion: str = "gradual"  # "gradual" o "discreta"
+
+    # ------------------------------
+    # Shocks (gas y precios combustibles)
     # ------------------------------
     sigma_gas: float = 0.20
+    sigma_precios: float = 0.25  # Volatilidad precios internacionales
 
     # ------------------------------
     # Riesgo financiero
@@ -75,13 +86,23 @@ def shocks_gas(T, n, sigma, rng):
     return np.exp(Z - sigma**2 / 2)  # Corrección lognormal para E[exp(Z)] = 1
 
 
+def shocks_precios_combustibles(T, n, sigma, rng):
+    """
+    Shocks sobre precios internacionales de combustibles
+    Retorna matriz (n_sim, T) de factores multiplicativos
+    """
+    Z = rng.normal(0, sigma, size=(n, T))
+    return np.exp(Z - sigma**2 / 2)
+
+
 # ==============================================================
 # MODELO FISCAL DINÁMICO
 # ==============================================================
 
 def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
     rng = np.random.default_rng(seed)
-    shocks = shocks_gas(p.T, p.n_sim, p.sigma_gas, rng)
+    shocks_gas_sim = shocks_gas(p.T, p.n_sim, p.sigma_gas, rng)
+    shocks_precios = shocks_precios_combustibles(p.T, p.n_sim, p.sigma_precios, rng)
 
     # Arrays para guardar resultados
     deuda_interna = np.zeros((p.n_sim, p.T))
@@ -93,6 +114,8 @@ def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
     ingresos_totales = np.zeros((p.n_sim, p.T))
     ingresos_gas = np.zeros((p.n_sim, p.T))
     gastos = np.zeros((p.n_sim, p.T))
+    subsidios = np.zeros((p.n_sim, p.T))
+    gasto_sin_subsidio = np.zeros((p.n_sim, p.T))
 
     # Separar ingresos no-gas desde el inicio
     ingresos_no_gas_0 = p.ingresos_totales_0 - p.ingresos_gas_0
@@ -101,7 +124,7 @@ def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
         # Estados iniciales
         pib = p.PIB0
         ingresos_no_gas = ingresos_no_gas_0
-        gasto = p.gasto_total_0
+        gasto = p.gasto_total_0 - p.subsidio_0  # Gasto sin subsidio
         rin = p.RIN0
         deuda_int = p.deuda_int0
         deuda_ext = p.deuda_ext0
@@ -119,16 +142,47 @@ def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
             ingresos_no_gas *= (1 + p.elasticidad_ingresos * p.g_pib)
             
             # Ingresos del gas (tendencia + shock)
-            gas_t = p.ingresos_gas_0 * ((1 + p.crecimiento_gas_base) ** (t + 1)) * shocks[s, t]
+            gas_t = p.ingresos_gas_0 * ((1 + p.crecimiento_gas_base) ** (t + 1)) * shocks_gas_sim[s, t]
             
             # Total
             ingresos_t = ingresos_no_gas + gas_t
 
             # ============================================
-            # 3. GASTO con regla fiscal
+            # 3. SUBSIDIO
             # ============================================
-            ratio_deuda_pib = (deuda_int + deuda_ext) / pib
+            # Componente tendencial
+            subsidio_base = p.subsidio_0 * ((1 + p.crecimiento_subsidio) ** (t + 1))
             
+            # Ajuste por PIB (mayor PIB = mayor consumo = mayor subsidio)
+            factor_pib = (pib / p.PIB0) ** p.elasticidad_subsidio_pib
+            
+            # Ajuste por precios internacionales (shock estocástico)
+            factor_precios = shocks_precios[s, t] ** p.elasticidad_subsidio_precios
+            
+            # Subsidio antes de política
+            subsidio_t = subsidio_base * factor_pib * factor_precios
+            
+            # Aplicar política de reducción de subsidio
+            if p.tipo_reduccion == "gradual":
+                # Reducción gradual a lo largo de los años
+                reduccion_aplicada = (p.reduccion_subsidio / p.T) * (t + 1)
+                reduccion_aplicada = min(reduccion_aplicada, p.reduccion_subsidio)
+            else:  # discreta
+                # Reducción aplicada al 100% desde el primer año
+                reduccion_aplicada = p.reduccion_subsidio
+            
+            subsidio_t *= (1 - reduccion_aplicada)
+            
+            # Regla fiscal: reducir subsidio si deuda es alta
+            ratio_deuda_pib = (deuda_int + deuda_ext) / pib
+            if ratio_deuda_pib > 0.70:
+                subsidio_t *= 0.85  # Reducción adicional 15%
+            elif ratio_deuda_pib > 0.60:
+                subsidio_t *= 0.95  # Reducción adicional 5%
+
+            # ============================================
+            # 4. GASTO (sin subsidio) con regla fiscal
+            # ============================================
             if ratio_deuda_pib > 0.70:
                 # Austeridad: gasto crece más lento
                 gasto *= (1 + p.crecimiento_gasto * 0.5)
@@ -139,13 +193,16 @@ def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
                 # Normal
                 gasto *= (1 + p.crecimiento_gasto)
 
-            # ============================================
-            # 4. DÉFICIT PRIMARIO
-            # ============================================
-            deficit_primario = gasto - ingresos_t
+            # Gasto total (incluyendo subsidio)
+            gasto_total = gasto + subsidio_t
 
             # ============================================
-            # 5. INTERESES
+            # 5. DÉFICIT PRIMARIO
+            # ============================================
+            deficit_primario = gasto_total - ingresos_t
+
+            # ============================================
+            # 6. INTERESES
             # ============================================
             # Prima de riesgo (aumenta con ratio deuda/PIB)
             prima = p.phi_deuda * max(0, ratio_deuda_pib - 0.6)
@@ -157,12 +214,12 @@ def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
             intereses_totales = intereses_int + intereses_ext
 
             # ============================================
-            # 6. DÉFICIT TOTAL (primario + intereses)
+            # 7. DÉFICIT TOTAL (primario + intereses)
             # ============================================
             deficit_total = deficit_primario + intereses_totales
 
             # ============================================
-            # 7. FINANCIAMIENTO DEL DÉFICIT
+            # 8. FINANCIAMIENTO DEL DÉFICIT
             # ============================================
             # Parte del déficit se financia con RIN
             if deficit_total > 0:
@@ -179,13 +236,13 @@ def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
                 nueva_deuda_int = 0
 
             # ============================================
-            # 8. ACTUALIZAR DEUDA
+            # 9. ACTUALIZAR DEUDA
             # ============================================
             deuda_int += nueva_deuda_int
             deuda_ext += nueva_deuda_ext
 
             # ============================================
-            # 9. RESERVAS INTERNACIONALES (RIN)
+            # 10. RESERVAS INTERNACIONALES (RIN)
             # ============================================
             # Entradas: fracción de ingresos del gas
             entrada_rin = p.tasa_ahorro_gas * gas_t
@@ -196,7 +253,7 @@ def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
             rin = max(0, rin + entrada_rin - salida_rin)
 
             # ============================================
-            # 10. GUARDAR RESULTADOS
+            # 11. GUARDAR RESULTADOS
             # ============================================
             deuda_interna[s, t] = deuda_int
             deuda_externa[s, t] = deuda_ext
@@ -206,7 +263,9 @@ def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
             RIN[s, t] = rin
             ingresos_totales[s, t] = ingresos_t
             ingresos_gas[s, t] = gas_t
-            gastos[s, t] = gasto
+            gastos[s, t] = gasto_total
+            subsidios[s, t] = subsidio_t
+            gasto_sin_subsidio[s, t] = gasto
 
     return {
         "deuda_total": deuda_total,
@@ -218,7 +277,9 @@ def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
         "PIB": PIB,
         "ingresos_totales": ingresos_totales,
         "ingresos_gas": ingresos_gas,
-        "gastos": gastos
+        "gastos": gastos,
+        "subsidios": subsidios,
+        "gasto_sin_subsidio": gasto_sin_subsidio
     }
 
 
@@ -259,12 +320,47 @@ def indicadores_finales(resultados):
 
 
 # ==============================================================
+# ANÁLISIS DE SENSIBILIDAD DE SUBSIDIOS (RF4)
+# ==============================================================
+
+def analisis_sensibilidad_subsidios(reducciones=[0.0, 0.10, 0.20, 0.30, 0.50], seed=42):
+    """
+    Ejecuta múltiples simulaciones variando el porcentaje de reducción del subsidio
+    para analizar el impacto en el déficit fiscal
+    """
+    resultados_sensibilidad = {}
+    
+    for reduccion in reducciones:
+        print(f"\n🔍 Simulando con reducción de subsidio: {reduccion*100:.0f}%")
+        
+        # Crear parámetros con la reducción especificada
+        p = Parametros()
+        p.reduccion_subsidio = reduccion
+        
+        # Simular
+        res = simular_modelo(p, seed=seed)
+        
+        # Guardar resultados clave
+        resultados_sensibilidad[f"reduccion_{int(reduccion*100)}pct"] = {
+            "deficit_medio": res["deficit"].mean(axis=0),
+            "subsidio_medio": res["subsidios"].mean(axis=0),
+            "ratio_deuda_pib_medio": res["ratio_deuda_pib"].mean(axis=0),
+            "deficit_final": res["deficit"][:, -1].mean(),
+            "subsidio_final": res["subsidios"][:, -1].mean(),
+            "ahorro_acumulado": (p.subsidio_0 * reduccion * 6)  # Aproximado
+        }
+    
+    return resultados_sensibilidad
+
+
+# ==============================================================
 # EJECUCIÓN
 # ==============================================================
 
 if __name__ == "__main__":
     print("=" * 70)
     print("MODELO FISCAL ESTOCÁSTICO - BOLIVIA 2020-2025")
+    print("CON ANÁLISIS DE SUBSIDIOS")
     print("=" * 70)
     
     p = Parametros()
@@ -294,6 +390,11 @@ if __name__ == "__main__":
     print(res["deficit"].round(0))
 
     print("\n" + "=" * 70)
+    print("⛽ SUBSIDIOS (millones Bs)")
+    print("=" * 70)
+    print(res["subsidios"].round(0))
+
+    print("\n" + "=" * 70)
     print("🎯 INDICADORES FINALES (2025)")
     print("=" * 70)
     ind_finales = indicadores_finales(resultados)
@@ -306,5 +407,18 @@ if __name__ == "__main__":
     print(f"Probabilidad Deuda/PIB > 80%: {(ratio_final > 0.80).mean()*100:.1f}%")
     print(f"Probabilidad Deuda/PIB > 90%: {(ratio_final > 0.90).mean()*100:.1f}%")
     print(f"Probabilidad RIN < 10,000:    {(resultados['RIN'][:, -1] < 10_000).mean()*100:.1f}%")
+    
+    print("\n" + "=" * 70)
+    print("📊 ANÁLISIS DE SENSIBILIDAD DE SUBSIDIOS (RF4)")
+    print("=" * 70)
+    
+    sens = analisis_sensibilidad_subsidios([0.0, 0.10, 0.20, 0.30, 0.50])
+    
+    print("\nImpacto de la reducción de subsidios en el déficit final (2025):")
+    print("-" * 70)
+    for key, value in sens.items():
+        reduccion_pct = key.replace("reduccion_", "").replace("pct", "")
+        print(f"Reducción {reduccion_pct}%: Déficit = {value['deficit_final']:,.0f} M Bs | "
+              f"Subsidio = {value['subsidio_final']:,.0f} M Bs")
     
     print("\n✅ Simulación completada\n")
