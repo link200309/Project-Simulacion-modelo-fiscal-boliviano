@@ -1,17 +1,14 @@
 from flask import Flask
+from routes.simulacion_routes import simulacion_bp
 
-app = Flask(__name__)
+def crear_app():
+    app = Flask(__name__)
 
-@app.route("/")
-def home():
-    return {
-        "status": "ok",
-        "mensaje": "Servidor del simulador fiscal boliviano activo"
-    }
+    app.register_blueprint(simulacion_bp, url_prefix="/api")
+
+    return app
+
 
 if __name__ == "__main__":
-    app.run(
-        debug=True,      # Modo desarrollo
-        host="127.0.0.1",# Localhost
-        port=5000        # Puerto estándar Flask
-    )
+    app = crear_app()
+    app.run(debug=True)
