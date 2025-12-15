@@ -1,9 +1,7 @@
+import SimulatorPage from "./pages/SimulatorPage";
+
 function App() {
-  return (
-    <>
-      <p className="text-blue-400">Hola mundo</p>
-    </>
-  );
+  return <SimulatorPage />;
 }
 
 export default App;
