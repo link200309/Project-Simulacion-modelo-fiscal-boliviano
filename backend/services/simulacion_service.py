@@ -77,6 +77,9 @@ def ejecutar_simulacion(parametros_usuario=None):
         "rin_p75": np.percentile(resultados["RIN"], 75, axis=0).tolist(),
         "rin_p95": np.percentile(resultados["RIN"], 95, axis=0).tolist(),
         
+        # Distribución completa del déficit 2025 para histograma
+        "deficit_2025_distribution": resultados["deficit"][:, -1].tolist(),
+        
         # Indicadores de riesgo
         "indicadores_riesgo": {
             "prob_deuda_gt_80": float((resultados["ratio_deuda_pib"][:, -1] > 0.80).mean() * 100),
