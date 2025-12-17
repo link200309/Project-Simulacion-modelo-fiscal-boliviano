@@ -103,25 +103,30 @@ export function ParametersSection({
 
       for (let i = 0; i < years.length; i++) {
         const year = years[i];
+
+        // Calcular subsidio base con crecimiento tendencial (1.5% anual)
+        const subsidioBaseYear = localParams.subsidiosBase * Math.pow(1.015, i);
+
         let ahorroYear = 0;
         let porcentajeAplicado = 0;
 
         // Cálculo según tipo de reducción
         if (localParams.reductionType === "discrete") {
-          ahorroYear = ahorroAnual;
+          ahorroYear = subsidioBaseYear * (localParams.subsidyReduction / 100);
           porcentajeAplicado = localParams.subsidyReduction;
         } else {
           // Gradual: incremento lineal en 5 años
           const factor = Math.min((i + 1) / 5, 1);
-          ahorroYear = ahorroAnual * factor;
+          ahorroYear =
+            subsidioBaseYear * (localParams.subsidyReduction / 100) * factor;
           porcentajeAplicado = localParams.subsidyReduction * factor;
         }
 
         // Comparación de escenarios (sin reducción vs con reducción)
         escenarioComparison.push({
           year,
-          escenarioBase: localParams.subsidiosBase,
-          escenarioConReduccion: localParams.subsidiosBase - ahorroYear,
+          escenarioBase: subsidioBaseYear,
+          escenarioConReduccion: subsidioBaseYear - ahorroYear,
           ahorro: ahorroYear,
         });
 
@@ -129,7 +134,7 @@ export function ParametersSection({
         trayectoriaReduccion.push({
           year,
           porcentajeReduccion: porcentajeAplicado,
-          subsidiosResultante: localParams.subsidiosBase - ahorroYear,
+          subsidiosResultante: subsidioBaseYear - ahorroYear,
           ahorroAnual: ahorroYear,
         });
       }

@@ -32,6 +32,10 @@ def ejecutar_simulacion(parametros_usuario=None):
     
     resultados = simular_modelo(parametros)
 
+    # Tomar 50 trayectorias de muestra para visualización
+    n_muestras = min(50, parametros.n_sim)
+    indices_muestra = np.random.choice(parametros.n_sim, n_muestras, replace=False)
+    
     # Datos principales (media)
     salida = {
         "deuda_media": resultados["deuda_total"].mean(axis=0).tolist(),
@@ -47,6 +51,20 @@ def ejecutar_simulacion(parametros_usuario=None):
         "ingresos_plomo": resultados["ingresos_plomo"].mean(axis=0).tolist(),
         "ingresos_estano": resultados["ingresos_estano"].mean(axis=0).tolist(),
         "ingresos_minerales": resultados["ingresos_minerales_totales"].mean(axis=0).tolist(),
+        
+        # Trayectorias de ingresos (muestra para visualización de shocks)
+        "trayectorias_gas": resultados["ingresos_gas"][indices_muestra, :].tolist(),
+        "trayectorias_zinc": resultados["ingresos_zinc"][indices_muestra, :].tolist(),
+        "trayectorias_plata": resultados["ingresos_plata"][indices_muestra, :].tolist(),
+        "trayectorias_plomo": resultados["ingresos_plomo"][indices_muestra, :].tolist(),
+        "trayectorias_estano": resultados["ingresos_estano"][indices_muestra, :].tolist(),
+        
+        # Trayectorias de precios (muestra para visualización)
+        "trayectorias_precio_gas": resultados["precio_gas"][indices_muestra, :].tolist(),
+        "trayectorias_precio_zinc": resultados["precio_zinc"][indices_muestra, :].tolist(),
+        "trayectorias_precio_plata": resultados["precio_plata"][indices_muestra, :].tolist(),
+        "trayectorias_precio_plomo": resultados["precio_plomo"][indices_muestra, :].tolist(),
+        "trayectorias_precio_estano": resultados["precio_estano"][indices_muestra, :].tolist(),
         
         # Percentiles para análisis de riesgo (RF2)
         "ratio_deuda_pib_p05": np.percentile(resultados["ratio_deuda_pib"], 5, axis=0).tolist(),

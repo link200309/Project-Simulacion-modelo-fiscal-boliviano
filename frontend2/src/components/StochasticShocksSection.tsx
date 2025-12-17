@@ -14,7 +14,6 @@ import {
 interface ShockConfig {
   commodity: string;
   volatilidad: number;
-  valorEsperado: number;
   enabled: boolean;
 }
 
@@ -30,31 +29,26 @@ export function StochasticShocksSection({
     {
       commodity: "Gas Natural",
       volatilidad: 0.2,
-      valorEsperado: 50,
       enabled: true,
     },
     {
       commodity: "Zinc",
       volatilidad: 0.25,
-      valorEsperado: 50,
       enabled: true,
     },
     {
       commodity: "Plata",
       volatilidad: 0.3,
-      valorEsperado: 50,
       enabled: true,
     },
     {
       commodity: "Plomo",
       volatilidad: 0.22,
-      valorEsperado: 50,
       enabled: true,
     },
     {
       commodity: "Estaño",
       volatilidad: 0.28,
-      valorEsperado: 50,
       enabled: true,
     },
   ]);
@@ -69,6 +63,15 @@ export function StochasticShocksSection({
     const dt = 1;
     const previewSims = 50; // Mostrar 50 trayectorias en preview
 
+    // Precios base para cada commodity (valores iniciales 2020)
+    const preciosBase: { [key: string]: number } = {
+      "Gas Natural": 3.0, // USD/MMBTU
+      Zinc: 2200.0, // USD/tonelada
+      Plata: 20.0, // USD/onza troy
+      Plomo: 1850.0, // USD/tonelada
+      Estaño: 17000.0, // USD/tonelada
+    };
+
     const trajectories: any = {};
     const bandData: any = {}; // Datos de bandas P10-P90
 
@@ -78,8 +81,10 @@ export function StochasticShocksSection({
       trajectories[config.commodity] = [];
       bandData[config.commodity] = [];
 
+      const precioInicial = preciosBase[config.commodity] || 100;
+
       for (let sim = 0; sim < numSimulaciones; sim++) {
-        let price = config.valorEsperado;
+        let price = precioInicial;
         const trajectory = [{ year: 2020, price }];
 
         for (let t = 1; t < years; t++) {
@@ -210,24 +215,6 @@ export function StochasticShocksSection({
                   <span className="text-[var(--gray-600)]">
                     {(config.volatilidad * 100).toFixed(0)}%
                   </span>
-                </div>
-
-                <div>
-                  <label className="block text-[var(--gray-700)] mb-2">
-                    Valor Esperado (USD)
-                  </label>
-                  <input
-                    type="number"
-                    value={config.valorEsperado}
-                    onChange={(e) =>
-                      updateConfig(
-                        index,
-                        "valorEsperado",
-                        parseFloat(e.target.value) || 0
-                      )
-                    }
-                    className="w-full px-4 py-2 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)]"
-                  />
                 </div>
               </div>
             )}
