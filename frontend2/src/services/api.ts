@@ -114,17 +114,17 @@ export const getDefaultSimulation = async (): Promise<SimulationResponse> => {
 export const transformSimulationData = (data: SimulationResponse["datos"]) => {
   const years = [2020, 2021, 2022, 2023, 2024, 2025];
 
-  // Transform debt data (convert to thousands for better readability)
+  // Transform debt data (backend sends in millones Bs)
   const deudaTotal = years.map((year, index) => ({
     year,
-    mean: (data.deuda_media[index] || 0) / 1000,
+    mean: data.deuda_media[index] || 0,
     p05: 0,
-    p10: ((data.deuda_media[index] || 0) * 0.85) / 1000,
-    p25: ((data.deuda_media[index] || 0) * 0.9) / 1000,
-    p50: (data.deuda_media[index] || 0) / 1000,
-    p75: ((data.deuda_media[index] || 0) * 1.1) / 1000,
-    p90: ((data.deuda_media[index] || 0) * 1.15) / 1000,
-    p95: ((data.deuda_media[index] || 0) * 1.2) / 1000,
+    p10: (data.deuda_media[index] || 0) * 0.85,
+    p25: (data.deuda_media[index] || 0) * 0.9,
+    p50: data.deuda_media[index] || 0,
+    p75: (data.deuda_media[index] || 0) * 1.1,
+    p90: (data.deuda_media[index] || 0) * 1.15,
+    p95: (data.deuda_media[index] || 0) * 1.2,
   }));
 
   // Transform debt to GDP ratio (already in percentage)
@@ -140,30 +140,30 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
     p95: (data.ratio_deuda_pib_p95[index] || 0) * 100,
   }));
 
-  // Transform RIN data (convert to thousands)
+  // Transform RIN data (backend sends in millones Bs)
   const rin = years.map((year, index) => ({
     year,
-    mean: (data.rin_media[index] || 0) / 1000,
-    p05: (data.rin_p05[index] || 0) / 1000,
-    p10: (data.rin_p05[index] || 0) / 1000,
-    p25: (data.rin_p25[index] || 0) / 1000,
-    p50: (data.rin_media[index] || 0) / 1000,
-    p75: (data.rin_p75[index] || 0) / 1000,
-    p90: (data.rin_p95[index] || 0) / 1000,
-    p95: (data.rin_p95[index] || 0) / 1000,
+    mean: data.rin_media[index] || 0,
+    p05: data.rin_p05[index] || 0,
+    p10: data.rin_p05[index] || 0,
+    p25: data.rin_p25[index] || 0,
+    p50: data.rin_media[index] || 0,
+    p75: data.rin_p75[index] || 0,
+    p90: data.rin_p95[index] || 0,
+    p95: data.rin_p95[index] || 0,
   }));
 
-  // Transform fiscal deficit data (convert to thousands)
+  // Transform fiscal deficit data (backend sends in millones Bs)
   const deficitFiscal = years.map((year, index) => ({
     year,
-    mean: (data.deficit_final[index] || 0) / 1000,
-    p05: ((data.deficit_final[index] || 0) * 1.2) / 1000,
-    p10: ((data.deficit_final[index] || 0) * 1.15) / 1000,
-    p25: ((data.deficit_final[index] || 0) * 1.1) / 1000,
-    p50: (data.deficit_final[index] || 0) / 1000,
-    p75: ((data.deficit_final[index] || 0) * 0.9) / 1000,
-    p90: ((data.deficit_final[index] || 0) * 0.85) / 1000,
-    p95: ((data.deficit_final[index] || 0) * 0.8) / 1000,
+    mean: data.deficit_final[index] || 0,
+    p05: (data.deficit_final[index] || 0) * 1.2,
+    p10: (data.deficit_final[index] || 0) * 1.15,
+    p25: (data.deficit_final[index] || 0) * 1.1,
+    p50: data.deficit_final[index] || 0,
+    p75: (data.deficit_final[index] || 0) * 0.9,
+    p90: (data.deficit_final[index] || 0) * 0.85,
+    p95: (data.deficit_final[index] || 0) * 0.8,
     distribution: [],
   }));
 
@@ -176,43 +176,43 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
     numSimulaciones: 1000,
     gastos: years.map((year, index) => ({
       year,
-      value: (data.gastos[index] || 0) / 1000,
+      value: data.gastos[index] || 0,
     })),
     gastoSinSubsidio: years.map((year, index) => ({
       year,
-      value: (data.gasto_sin_subsidio[index] || 0) / 1000,
+      value: data.gasto_sin_subsidio[index] || 0,
     })),
     subsidios: years.map((year, index) => ({
       year,
-      value: (data.subsidios[index] || 0) / 1000,
+      value: data.subsidios[index] || 0,
     })),
     ingresosGas: years.map((year, index) => ({
       year,
-      value: (data.ingresos_gas?.[index] || 0) / 1000,
+      value: data.ingresos_gas?.[index] || 0,
     })),
     ingresosZinc: years.map((year, index) => ({
       year,
-      value: (data.ingresos_zinc?.[index] || 0) / 1000,
+      value: data.ingresos_zinc?.[index] || 0,
     })),
     ingresosPlata: years.map((year, index) => ({
       year,
-      value: (data.ingresos_plata?.[index] || 0) / 1000,
+      value: data.ingresos_plata?.[index] || 0,
     })),
     ingresosPlomo: years.map((year, index) => ({
       year,
-      value: (data.ingresos_plomo?.[index] || 0) / 1000,
+      value: data.ingresos_plomo?.[index] || 0,
     })),
     ingresosEstano: years.map((year, index) => ({
       year,
-      value: (data.ingresos_estano?.[index] || 0) / 1000,
+      value: data.ingresos_estano?.[index] || 0,
     })),
     ingresosMinerales: years.map((year, index) => ({
       year,
-      value: (data.ingresos_minerales?.[index] || 0) / 1000,
+      value: data.ingresos_minerales?.[index] || 0,
     })),
     ingresosCommodities: years.map((year, index) => ({
       year,
-      value: (data.ingresos_commodities?.[index] || 0) / 1000,
+      value: data.ingresos_commodities?.[index] || 0,
     })),
   };
 };

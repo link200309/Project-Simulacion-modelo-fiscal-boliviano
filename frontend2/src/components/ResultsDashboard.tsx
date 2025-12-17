@@ -110,7 +110,7 @@ export function ResultsDashboard({
               <span className="text-[var(--gray-600)]">Deuda Total 2025</span>
             </div>
             <div className="text-[var(--bolivia-red)] text-2xl">
-              ${(latestDebt.mean / 1000).toFixed(1)}B
+              {latestDebt.mean.toFixed(0)} M Bs
             </div>
             <small className="text-[var(--gray-500)]">
               Media de {results.numSimulaciones.toLocaleString()} sims
@@ -134,7 +134,7 @@ export function ResultsDashboard({
               <span className="text-[var(--gray-600)]">RIN 2025</span>
             </div>
             <div className="text-[var(--bolivia-green)] text-2xl">
-              ${(latestRIN.mean / 1000).toFixed(1)}B
+              {latestRIN.mean.toFixed(0)} M Bs
             </div>
             <small className="text-[var(--gray-500)]">
               Reservas internacionales
@@ -168,7 +168,7 @@ export function ResultsDashboard({
               <YAxis
                 stroke="var(--gray-600)"
                 label={{
-                  value: "Millones USD",
+                  value: "Millones Bs",
                   angle: -90,
                   position: "insideLeft",
                 }}
@@ -180,7 +180,7 @@ export function ResultsDashboard({
                   borderRadius: "8px",
                   color: "white",
                 }}
-                formatter={(value: any) => `$${value.toFixed(0)}M`}
+                formatter={(value: any) => `${value.toFixed(0)} M Bs`}
               />
               <Legend />
               <Area
@@ -296,7 +296,7 @@ export function ResultsDashboard({
               <YAxis
                 stroke="var(--gray-600)"
                 label={{
-                  value: "Millones USD",
+                  value: "Millones Bs",
                   angle: -90,
                   position: "insideLeft",
                 }}
@@ -308,7 +308,7 @@ export function ResultsDashboard({
                   borderRadius: "8px",
                   color: "white",
                 }}
-                formatter={(value: any) => `$${value.toFixed(0)}M`}
+                formatter={(value: any) => `${value.toFixed(0)} M Bs`}
               />
               <Legend />
               <Area
@@ -435,7 +435,7 @@ export function ResultsDashboard({
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: any) => `$${value.toLocaleString()} M`}
+                  formatter={(value: any) => `${value.toLocaleString()} M Bs`}
                   contentStyle={{
                     backgroundColor: "var(--gray-900)",
                     border: "none",
@@ -473,7 +473,7 @@ export function ResultsDashboard({
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: any) => `$${value.toLocaleString()} M`}
+                  formatter={(value: any) => `${value.toLocaleString()} M Bs`}
                   contentStyle={{
                     backgroundColor: "var(--gray-900)",
                     border: "none",
@@ -535,7 +535,7 @@ export function ResultsDashboard({
                         borderRadius: "8px",
                         color: "white",
                       }}
-                      formatter={(value: any) => `$${value.toFixed(2)}`}
+                      formatter={(value: any) => `${value.toFixed(2)}`}
                     />
                     <Legend />
                     <Area
@@ -589,7 +589,7 @@ export function ResultsDashboard({
                   <YAxis
                     stroke="var(--gray-600)"
                     label={{
-                      value: "Subsidios (Millones USD)",
+                      value: "Subsidios (Millones Bs)",
                       angle: -90,
                       position: "insideLeft",
                     }}
@@ -601,7 +601,7 @@ export function ResultsDashboard({
                       borderRadius: "8px",
                       color: "white",
                     }}
-                    formatter={(value: any) => `$${value.toLocaleString()} M`}
+                    formatter={(value: any) => `${value.toLocaleString()} M Bs`}
                   />
                   <Legend />
                   <Bar
