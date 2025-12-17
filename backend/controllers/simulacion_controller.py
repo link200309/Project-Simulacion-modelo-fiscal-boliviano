@@ -1,8 +1,8 @@
 from services.simulacion_service import ejecutar_simulacion
 
-def obtener_resultados_simulacion():
+def obtener_resultados_simulacion(parametros_usuario=None):
     try:
-        resultados = ejecutar_simulacion()
+        resultados = ejecutar_simulacion(parametros_usuario)
         return {
             "estado": "exito",
             "datos": resultados
