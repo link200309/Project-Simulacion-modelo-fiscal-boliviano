@@ -164,7 +164,7 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
     p75: (data.deficit_final[index] || 0) * 0.9,
     p90: (data.deficit_final[index] || 0) * 0.85,
     p95: (data.deficit_final[index] || 0) * 0.8,
-    distribution: [],
+    distribution: year === 2025 ? data.deficit_2025_distribution || [] : [],
   }));
 
   return {
