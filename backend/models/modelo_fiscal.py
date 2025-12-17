@@ -31,6 +31,13 @@ class Parametros:
     ingresos_plomo_0: float = 1_500  # Ingresos base plomo (millones Bs)
     ingresos_estano_0: float = 2_500  # Ingresos base estaño (millones Bs)
 
+    # Precios base 2020 para commodities
+    precio_gas_0: float = 3.0  # USD/MMBTU
+    precio_zinc_0: float = 2200.0  # USD/tonelada
+    precio_plata_0: float = 20.0  # USD/onza troy
+    precio_plomo_0: float = 1850.0  # USD/tonelada
+    precio_estano_0: float = 17000.0  # USD/tonelada
+
     deuda_int0: float = 69_300
     deuda_ext0: float = 82_800
     RIN0: float = 36_900
@@ -169,6 +176,13 @@ def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
     gastos = np.zeros((p.n_sim, p.T))
     subsidios = np.zeros((p.n_sim, p.T))
     gasto_sin_subsidio = np.zeros((p.n_sim, p.T))
+    
+    # Arrays para precios de commodities
+    precio_gas = np.zeros((p.n_sim, p.T))
+    precio_zinc = np.zeros((p.n_sim, p.T))
+    precio_plata = np.zeros((p.n_sim, p.T))
+    precio_plomo = np.zeros((p.n_sim, p.T))
+    precio_estano = np.zeros((p.n_sim, p.T))
 
     # Separar ingresos no-commodities desde el inicio (excluir gas y minerales)
     ingresos_minerales_base_0 = p.ingresos_zinc_0 + p.ingresos_plata_0 + p.ingresos_plomo_0 + p.ingresos_estano_0
@@ -203,6 +217,13 @@ def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
             plata_t = p.ingresos_plata_0 * ((1 + p.crecimiento_plata_base) ** (t + 1)) * shocks_plata_sim[s, t]
             plomo_t = p.ingresos_plomo_0 * ((1 + p.crecimiento_plomo_base) ** (t + 1)) * shocks_plomo_sim[s, t]
             estano_t = p.ingresos_estano_0 * ((1 + p.crecimiento_estano_base) ** (t + 1)) * shocks_estano_sim[s, t]
+            
+            # Precios de commodities (usando los mismos shocks)
+            precio_gas_t = p.precio_gas_0 * ((1 + p.crecimiento_gas_base) ** (t + 1)) * shocks_gas_sim[s, t]
+            precio_zinc_t = p.precio_zinc_0 * ((1 + p.crecimiento_zinc_base) ** (t + 1)) * shocks_zinc_sim[s, t]
+            precio_plata_t = p.precio_plata_0 * ((1 + p.crecimiento_plata_base) ** (t + 1)) * shocks_plata_sim[s, t]
+            precio_plomo_t = p.precio_plomo_0 * ((1 + p.crecimiento_plomo_base) ** (t + 1)) * shocks_plomo_sim[s, t]
+            precio_estano_t = p.precio_estano_0 * ((1 + p.crecimiento_estano_base) ** (t + 1)) * shocks_estano_sim[s, t]
             
             # Total ingresos por minerales
             minerales_t = zinc_t + plata_t + plomo_t + estano_t
@@ -333,6 +354,12 @@ def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
             ingresos_plomo[s, t] = plomo_t
             ingresos_estano[s, t] = estano_t
             ingresos_minerales_totales[s, t] = minerales_t
+            
+            precio_gas[s, t] = precio_gas_t
+            precio_zinc[s, t] = precio_zinc_t
+            precio_plata[s, t] = precio_plata_t
+            precio_plomo[s, t] = precio_plomo_t
+            precio_estano[s, t] = precio_estano_t
             gastos[s, t] = gasto_total
             subsidios[s, t] = subsidio_t
             gasto_sin_subsidio[s, t] = gasto
@@ -352,6 +379,11 @@ def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
         "ingresos_plomo": ingresos_plomo,
         "ingresos_estano": ingresos_estano,
         "ingresos_minerales_totales": ingresos_minerales_totales,
+        "precio_gas": precio_gas,
+        "precio_zinc": precio_zinc,
+        "precio_plata": precio_plata,
+        "precio_plomo": precio_plomo,
+        "precio_estano": precio_estano,
         "gastos": gastos,
         "subsidios": subsidios,
         "gasto_sin_subsidio": gasto_sin_subsidio
