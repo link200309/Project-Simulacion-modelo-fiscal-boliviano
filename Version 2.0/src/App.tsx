@@ -1,0 +1,112 @@
+import { useState } from 'react';
+import { Header } from './components/Header';
+import { ParametersSection } from './components/ParametersSection';
+import { StochasticShocksSection } from './components/StochasticShocksSection';
+import { FiscalSimulationSection } from './components/FiscalSimulationSection';
+import { ResultsDashboard } from './components/ResultsDashboard';
+import { DownloadSection } from './components/DownloadSection';
+import { DocumentationSection } from './components/DocumentationSection';
+
+export default function App() {
+  const [activeSection, setActiveSection] = useState('parameters');
+  
+  // Estado del modelo
+  const [parameters, setParameters] = useState({
+    deudaInternaInicial: 8500,
+    deudaExternaInicial: 12000,
+    rinInicial: 15000,
+    tasaCrecimientoPIB: 4.5,
+    tasaInteresExterna: 3.5,
+    subsidyReduction: 0,
+    reductionType: 'discrete' as 'discrete' | 'gradual',
+    subsidiosBase: 1500
+  });
+
+  const [shocks, setShocks] = useState<any>(null);
+  const [simulationResults, setSimulationResults] = useState<any>(null);
+  const [sensitivityAnalysis, setSensitivityAnalysis] = useState<any>(null);
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'parameters':
+        return (
+          <ParametersSection 
+            parameters={parameters}
+            onParametersChange={setParameters}
+            onSensitivityAnalyzed={setSensitivityAnalysis}
+          />
+        );
+      
+      case 'simulation':
+        return (
+          <div className="space-y-6">
+            <StochasticShocksSection onShocksGenerated={setShocks} />
+            <FiscalSimulationSection 
+              onSimulationComplete={setSimulationResults}
+              parameters={parameters}
+              shocks={shocks}
+            />
+          </div>
+        );
+      
+      case 'results':
+        return (
+          <ResultsDashboard 
+            results={simulationResults}
+            shocks={shocks}
+            sensitivityAnalysis={sensitivityAnalysis}
+          />
+        );
+      
+      case 'downloads':
+        return (
+          <DownloadSection 
+            results={simulationResults}
+            parameters={parameters}
+          />
+        );
+      
+      case 'documentation':
+        return <DocumentationSection />;
+      
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[var(--gray-50)]">
+      <Header 
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+      />
+      
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {renderSection()}
+      </main>
+
+      <footer className="bg-white border-t-2 border-[var(--gray-200)] mt-12">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-[var(--gray-600)] text-center md:text-left">
+              <p className="mb-1">
+                <strong>Simulador Fiscal Boliviano bajo Incertidumbre</strong> · Modelo 2020–2025
+              </p>
+              <small className="text-[var(--gray-500)]">
+                Herramienta académica para análisis de sostenibilidad fiscal y política económica
+              </small>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex gap-1">
+                <div className="w-6 h-6 bg-[var(--bolivia-red)] rounded"></div>
+                <div className="w-6 h-6 bg-[var(--bolivia-yellow)] rounded"></div>
+                <div className="w-6 h-6 bg-[var(--bolivia-green)] rounded"></div>
+              </div>
+              <span className="text-[var(--gray-500)]">Bolivia</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
