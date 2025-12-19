@@ -125,13 +125,17 @@ export function FiscalSimulationSection({
         </p>
         <ul className="list-disc list-inside text-[var(--gray-600)] space-y-2 ml-4">
           <li>
-            Ingresos por exportación de commodities con shocks estocásticos
-            configurados en la sección anterior
+            Ingresos por exportación de commodities (gas natural y minerales)
+            con shocks estocásticos configurados en la sección anterior
           </li>
-          <li>Recaudación tributaria interna (IVA, IT, RC-IVA)</li>
-          <li>Gasto público corriente ajustado por política de subsidios</li>
-          <li>Servicio de deuda interna y externa</li>
+          <li>Ingresos fiscales no relacionados con commodities (tributarios y otros)</li>
+          <li>
+            Gasto público corriente más subsidios a combustibles ajustados por
+            política fiscal
+          </li>
+          <li>Servicio de deuda interna y externa con primas de riesgo</li>
           <li>Evolución de las Reservas Internacionales Netas (RIN)</li>
+          <li>Reglas fiscales automáticas según ratio deuda/PIB</li>
         </ul>
       </div>
 
@@ -141,24 +145,33 @@ export function FiscalSimulationSection({
         </h4>
         <div className="space-y-2 text-[var(--gray-700)] font-mono text-sm">
           <div>
-            Ingresos<sub>t</sub> = Ing_Commodities<sub>t</sub> + Ing_Tributarios
+            Ing_Minerales<sub>t</sub> = Ing_Zinc<sub>t</sub> + Ing_Plata<sub>t</sub> + Ing_Plomo<sub>t</sub> + Ing_Estaño<sub>t</sub>
+          </div>
+          <div>
+            Ing_Zinc<sub>t</sub> = Ing_Zinc<sub>0</sub> × (1 + g)<sup>t</sup> × Shock_Zinc<sub>t</sub>
+          </div>
+          <div>
+            Ingresos<sub>t</sub> = Ing_NoCommodities<sub>t</sub> + Ing_Gas
+            <sub>t</sub> + Ing_Minerales
             <sub>t</sub>
           </div>
           <div>
-            Gastos<sub>t</sub> = Gasto_Base<sub>t</sub> - Ahorro_Subsidios
+            Gastos<sub>t</sub> = Gasto_Base<sub>t</sub> + Subsidios<sub>t</sub>
+          </div>
+          <div>
+            Déficit_Primario<sub>t</sub> = Gastos<sub>t</sub> - Ingresos
             <sub>t</sub>
           </div>
           <div>
-            Déficit<sub>t</sub> = Ingresos<sub>t</sub> - Gastos<sub>t</sub> -
-            Servicio_Deuda<sub>t</sub>
+            Déficit_Total<sub>t</sub> = Déficit_Primario<sub>t</sub> + Intereses
+            <sub>t</sub>
           </div>
           <div>
-            Deuda<sub>t</sub> = Deuda<sub>t-1</sub> × (1 + r) - Déficit
-            <sub>t</sub>
+            Deuda<sub>t</sub> = Deuda<sub>t-1</sub> + Nueva_Deuda<sub>t</sub>
           </div>
           <div>
             RIN<sub>t</sub> = RIN<sub>t-1</sub> + Saldo_Cuenta_Corriente
-            <sub>t</sub>
+            <sub>t</sub> - Financiamiento_RIN<sub>t</sub>
           </div>
         </div>
       </div>

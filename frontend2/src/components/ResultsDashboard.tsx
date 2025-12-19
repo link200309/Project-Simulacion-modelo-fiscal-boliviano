@@ -147,9 +147,9 @@ export function ResultsDashboard({
               <span className="text-[var(--gray-600)]">Déficit 2025</span>
             </div>
             <div className="text-orange-500 text-2xl">
-              {latestDeficit.mean.toFixed(2)}%
+              {latestDeficit.mean.toFixed(0)}
             </div>
-            <small className="text-[var(--gray-500)]">% del PIB</small>
+            <small className="text-[var(--gray-500)]">Millones Bs</small>
           </div>
         </div>
       </div>
@@ -367,7 +367,7 @@ export function ResultsDashboard({
                 dataKey="bin"
                 stroke="var(--gray-600)"
                 label={{
-                  value: "% del PIB",
+                  value: "Millones de Bs",
                   position: "insideBottom",
                   offset: -5,
                 }}
@@ -760,19 +760,19 @@ export function ResultsDashboard({
               </tr>
               <tr className="hover:bg-[var(--gray-50)]">
                 <td className="py-3 px-4 text-[var(--gray-900)]">
-                  Déficit Fiscal (% PIB)
+                  Déficit Fiscal (Millones Bs)
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestDeficit.mean.toFixed(2)}
+                  {latestDeficit.mean.toFixed(0)}
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestDeficit.p05.toFixed(2)}
+                  {latestDeficit.p05.toFixed(0)}
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestDeficit.p25.toFixed(2)}
+                  {latestDeficit.p25.toFixed(0)}
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestDeficit.p95.toFixed(2)}
+                  {latestDeficit.p95.toFixed(0)}
                 </td>
               </tr>
             </tbody>
