@@ -642,6 +642,15 @@ export function ParametersSection({
                       borderRadius: "8px",
                       color: "white",
                     }}
+                    labelStyle={{ color: "white" }}
+                    itemStyle={{ color: "white" }}
+                    formatter={(value: any, name: string) => {
+                      const numValue = Number(value);
+                      if (name === "% Reducción Aplicado") {
+                        return numValue.toFixed(1) + "%";
+                      }
+                      return numValue.toFixed(2);
+                    }}
                   />
                   <Legend />
                   <Line

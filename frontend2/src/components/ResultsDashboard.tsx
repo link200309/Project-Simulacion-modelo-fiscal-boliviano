@@ -6,6 +6,7 @@ import {
   Zap,
   PieChart as PieChartIcon,
 } from "lucide-react";
+import { useState } from "react";
 import {
   LineChart,
   Line,
@@ -35,6 +36,22 @@ export function ResultsDashboard({
   shocks,
   sensitivityAnalysis,
 }: ResultsDashboardProps) {
+  const [currency, setCurrency] = useState<"Bs" | "USD">("Bs");
+  const EXCHANGE_RATE = 6.96;
+
+  // Función para convertir valores monetarios
+  const convertValue = (valueInMillionsBs: number): number => {
+    if (currency === "USD") {
+      return valueInMillionsBs / EXCHANGE_RATE;
+    }
+    return valueInMillionsBs;
+  };
+
+  // Función para obtener la unidad de moneda
+  const getCurrencyUnit = (): string => {
+    return currency === "USD" ? "M USD" : "M Bs";
+  };
+
   if (!results) {
     return (
       <div className="bg-white rounded-xl shadow-md p-8 text-center">
@@ -70,7 +87,7 @@ export function ResultsDashboard({
       ).length;
 
       distributionData.push({
-        bin: binStart.toFixed(1),
+        bin: convertValue(binStart).toFixed(1),
         frequency: count,
       });
     }
@@ -81,26 +98,98 @@ export function ResultsDashboard({
   const latestRIN = rin[rin.length - 1];
   const latestDeficit = deficitFiscal[deficitFiscal.length - 1];
 
-  // CORRECCIÓN 6: Datos para gráficos de pastel
+  // Calcular datos reales de gastos e ingresos del modelo (año final 2025)
+  // Los datos llegan como arrays de {year, value}
+  const gastoFinal = results.gastos?.[results.gastos.length - 1]?.value || 0;
+  const gastoSinSubsidioFinal =
+    results.gastoSinSubsidio?.[results.gastoSinSubsidio.length - 1]?.value || 0;
+  const subsidioFinal =
+    results.subsidios?.[results.subsidios.length - 1]?.value || 0;
+
+  const ingresosGasFinal =
+    results.ingresosGas?.[results.ingresosGas.length - 1]?.value || 0;
+  const ingresosZincFinal =
+    results.ingresosZinc?.[results.ingresosZinc.length - 1]?.value || 0;
+  const ingresosPlataFinal =
+    results.ingresosPlata?.[results.ingresosPlata.length - 1]?.value || 0;
+  const ingresosPlomoFinal =
+    results.ingresosPlomo?.[results.ingresosPlomo.length - 1]?.value || 0;
+  const ingresosEstanoFinal =
+    results.ingresosEstano?.[results.ingresosEstano.length - 1]?.value || 0;
+  const ingresosCommoditiesFinal =
+    ingresosGasFinal +
+    ingresosZincFinal +
+    ingresosPlataFinal +
+    ingresosPlomoFinal +
+    ingresosEstanoFinal;
+
+  // Calcular ingresos no commodities usando datos del modelo
+  const ingresosTotalesFinal =
+    results.ingresosTotales?.[results.ingresosTotales.length - 1]?.value || 0;
+  const ingresosNoCommod = ingresosTotalesFinal - ingresosCommoditiesFinal;
+
+  // Datos para gráficos de pastel con valores reales del modelo
   const gastoPublicoData = [
-    { name: "Gasto Corriente", value: 25000, fill: "#D72638" },
-    { name: "Gasto de Capital", value: 8000, fill: "#FFC857" },
-  ];
+    { name: "Gasto Corriente", value: gastoSinSubsidioFinal, fill: "#D72638" },
+    { name: "Subsidios", value: subsidioFinal, fill: "#FFC857" },
+  ].filter((item) => item.value > 0);
 
   const ingresosData = [
-    { name: "Ingresos Commodities", value: 4500, fill: "#00A878" },
-    { name: "Recaudación Interna", value: 18500, fill: "#6B7280" },
-  ];
+    {
+      name: "Ingresos Commodities",
+      value: ingresosCommoditiesFinal,
+      fill: "#00A878",
+    },
+    {
+      name: "Ingresos No Commodities",
+      value: ingresosNoCommod,
+      fill: "#6B7280",
+    },
+  ].filter((item) => item.value > 0);
 
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-md p-8">
-        <h2 className="text-[var(--gray-900)] mb-2">Dashboard de Resultados</h2>
-        <p className="text-[var(--gray-600)] mb-6">
-          Resultados del escenario con políticas fiscales y shocks estocásticos
-          aplicados. Los intervalos representan percentiles 10-90 de las
-          simulaciones Monte Carlo.
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-[var(--gray-900)] mb-2">
+              Dashboard de Resultados
+            </h2>
+            <p className="text-[var(--gray-600)]">
+              Resultados del escenario con políticas fiscales y shocks
+              estocásticos aplicados. Los intervalos representan percentiles
+              10-90 de las simulaciones Monte Carlo.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-[var(--gray-600)]">Unidad:</span>
+            <div className="flex gap-2 bg-[var(--gray-100)] rounded-lg p-1">
+              <button
+                onClick={() => setCurrency("Bs")}
+                className={`px-3 py-1 rounded text-sm font-medium transition-all ${
+                  currency === "Bs"
+                    ? "bg-white text-[var(--gray-900)] shadow-sm"
+                    : "text-[var(--gray-600)] hover:text-[var(--gray-900)]"
+                }`}
+              >
+                Bs
+              </button>
+              <button
+                onClick={() => setCurrency("USD")}
+                className={`px-3 py-1 rounded text-sm font-medium transition-all ${
+                  currency === "USD"
+                    ? "bg-white text-[var(--gray-900)] shadow-sm"
+                    : "text-[var(--gray-600)] hover:text-[var(--gray-900)]"
+                }`}
+              >
+                USD
+              </button>
+            </div>
+            <span className="text-xs text-[var(--gray-500)]">
+              TC: 1 USD = {EXCHANGE_RATE} Bs
+            </span>
+          </div>
+        </div>
 
         {/* KPIs Summary */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -110,7 +199,7 @@ export function ResultsDashboard({
               <span className="text-[var(--gray-600)]">Deuda Total 2025</span>
             </div>
             <div className="text-[var(--bolivia-red)] text-2xl">
-              {latestDebt.mean.toFixed(0)} M Bs
+              {convertValue(latestDebt.mean).toFixed(0)} {getCurrencyUnit()}
             </div>
             <small className="text-[var(--gray-500)]">
               Media de {results.numSimulaciones.toLocaleString()} sims
@@ -134,7 +223,7 @@ export function ResultsDashboard({
               <span className="text-[var(--gray-600)]">RIN 2025</span>
             </div>
             <div className="text-[var(--bolivia-green)] text-2xl">
-              {latestRIN.mean.toFixed(0)} M Bs
+              {convertValue(latestRIN.mean).toFixed(0)} {getCurrencyUnit()}
             </div>
             <small className="text-[var(--gray-500)]">
               Reservas internacionales
@@ -147,9 +236,11 @@ export function ResultsDashboard({
               <span className="text-[var(--gray-600)]">Déficit 2025</span>
             </div>
             <div className="text-orange-500 text-2xl">
-              {latestDeficit.mean.toFixed(0)}
+              {convertValue(latestDeficit.mean).toFixed(0)} {getCurrencyUnit()}
             </div>
-            <small className="text-[var(--gray-500)]">Millones Bs</small>
+            <small className="text-[var(--gray-500)]">
+              Déficit fiscal promedio
+            </small>
           </div>
         </div>
       </div>
@@ -168,7 +259,7 @@ export function ResultsDashboard({
               <YAxis
                 stroke="var(--gray-600)"
                 label={{
-                  value: "Millones Bs",
+                  value: getCurrencyUnit(),
                   angle: -90,
                   position: "insideLeft",
                 }}
@@ -180,7 +271,9 @@ export function ResultsDashboard({
                   borderRadius: "8px",
                   color: "white",
                 }}
-                formatter={(value: any) => `${value.toFixed(0)} M Bs`}
+                formatter={(value: any) =>
+                  `${convertValue(value).toFixed(0)} ${getCurrencyUnit()}`
+                }
               />
               <Legend />
               <Area
@@ -296,7 +389,7 @@ export function ResultsDashboard({
               <YAxis
                 stroke="var(--gray-600)"
                 label={{
-                  value: "Millones Bs",
+                  value: getCurrencyUnit(),
                   angle: -90,
                   position: "insideLeft",
                 }}
@@ -308,7 +401,9 @@ export function ResultsDashboard({
                   borderRadius: "8px",
                   color: "white",
                 }}
-                formatter={(value: any) => `${value.toFixed(0)} M Bs`}
+                formatter={(value: any) =>
+                  `${convertValue(value).toFixed(0)} ${getCurrencyUnit()}`
+                }
               />
               <Legend />
               <Area
@@ -367,7 +462,7 @@ export function ResultsDashboard({
                 dataKey="bin"
                 stroke="var(--gray-600)"
                 label={{
-                  value: "Millones de Bs",
+                  value: getCurrencyUnit(),
                   position: "insideBottom",
                   offset: -5,
                 }}
@@ -423,10 +518,8 @@ export function ResultsDashboard({
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(1)}%`
-                  }
-                  outerRadius={90}
+                  label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                  outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -435,18 +528,31 @@ export function ResultsDashboard({
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: any) => `${value.toLocaleString()} M Bs`}
+                  formatter={(value: any) =>
+                    `${convertValue(value).toFixed(0)} ${getCurrencyUnit()}`
+                  }
                   contentStyle={{
                     backgroundColor: "var(--gray-900)",
                     border: "none",
                     borderRadius: "8px",
                     color: "white",
                   }}
+                  labelStyle={{ color: "white" }}
+                  itemStyle={{ color: "white" }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  height={36}
+                  wrapperStyle={{ fontSize: "12px" }}
                 />
               </PieChart>
             </ResponsiveContainer>
             <p className="text-[var(--gray-600)] text-center mt-2 text-sm">
-              Total: ${(25000 + 8000).toLocaleString()} M
+              Total:{" "}
+              {convertValue(
+                gastoPublicoData.reduce((acc, d) => acc + d.value, 0)
+              ).toFixed(0)}{" "}
+              {getCurrencyUnit()}
             </p>
           </div>
 
@@ -461,10 +567,8 @@ export function ResultsDashboard({
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(1)}%`
-                  }
-                  outerRadius={90}
+                  label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                  outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -473,18 +577,31 @@ export function ResultsDashboard({
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: any) => `${value.toLocaleString()} M Bs`}
+                  formatter={(value: any) =>
+                    `${convertValue(value).toFixed(0)} ${getCurrencyUnit()}`
+                  }
                   contentStyle={{
                     backgroundColor: "var(--gray-900)",
                     border: "none",
                     borderRadius: "8px",
                     color: "white",
                   }}
+                  labelStyle={{ color: "white" }}
+                  itemStyle={{ color: "white" }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  height={36}
+                  wrapperStyle={{ fontSize: "12px" }}
                 />
               </PieChart>
             </ResponsiveContainer>
             <p className="text-[var(--gray-600)] text-center mt-2 text-sm">
-              Total: ${(4500 + 18500).toLocaleString()} M
+              Total:{" "}
+              {convertValue(
+                ingresosData.reduce((acc, d) => acc + d.value, 0)
+              ).toFixed(0)}{" "}
+              {getCurrencyUnit()}
             </p>
           </div>
         </div>
@@ -505,7 +622,7 @@ export function ResultsDashboard({
         {shocks?.bandData && (
           <div className="space-y-6 mb-8">
             <h4 className="text-[var(--gray-800)]">
-              📊 Shocks Estocásticos: Trayectorias de Precios de Commodities
+              Shocks Estocásticos: Trayectorias de Precios de Commodities
             </h4>
 
             {Object.keys(shocks.bandData).map((commodity) => (
@@ -589,7 +706,7 @@ export function ResultsDashboard({
                   <YAxis
                     stroke="var(--gray-600)"
                     label={{
-                      value: "Subsidios (Millones Bs)",
+                      value: `Subsidios (${getCurrencyUnit()})`,
                       angle: -90,
                       position: "insideLeft",
                     }}
@@ -601,7 +718,13 @@ export function ResultsDashboard({
                       borderRadius: "8px",
                       color: "white",
                     }}
-                    formatter={(value: any) => `${value.toLocaleString()} M Bs`}
+                    labelStyle={{ color: "white" }}
+                    itemStyle={{ color: "white" }}
+                    formatter={(value: any) =>
+                      `${convertValue(value).toFixed(
+                        currency === "USD" ? 2 : 0
+                      )} ${getCurrencyUnit()}`
+                    }
                   />
                   <Legend />
                   <Bar
@@ -643,7 +766,7 @@ export function ResultsDashboard({
                     orientation="right"
                     stroke="var(--gray-600)"
                     label={{
-                      value: "Ahorro (M USD)",
+                      value: `Ahorro (${getCurrencyUnit()})`,
                       angle: 90,
                       position: "insideRight",
                     }}
@@ -654,6 +777,16 @@ export function ResultsDashboard({
                       border: "none",
                       borderRadius: "8px",
                       color: "white",
+                    }}
+                    labelStyle={{ color: "white" }}
+                    itemStyle={{ color: "white" }}
+                    formatter={(value: any, name: string) => {
+                      if (name === "% Reducción") {
+                        return `${Number(value).toFixed(1)}%`;
+                      }
+                      return `${convertValue(value).toFixed(
+                        currency === "USD" ? 2 : 0
+                      )} ${getCurrencyUnit()}`;
                     }}
                   />
                   <Legend />
@@ -709,19 +842,27 @@ export function ResultsDashboard({
             <tbody>
               <tr className="border-b border-[var(--gray-200)] hover:bg-[var(--gray-50)]">
                 <td className="py-3 px-4 text-[var(--gray-900)]">
-                  Deuda Pública Total (M USD)
+                  Deuda Pública Total ({getCurrencyUnit()})
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestDebt.mean.toFixed(0)}
+                  {convertValue(latestDebt.mean).toFixed(
+                    currency === "USD" ? 2 : 0
+                  )}
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestDebt.p05.toFixed(0)}
+                  {convertValue(latestDebt.p05).toFixed(
+                    currency === "USD" ? 2 : 0
+                  )}
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestDebt.p25.toFixed(0)}
+                  {convertValue(latestDebt.p25).toFixed(
+                    currency === "USD" ? 2 : 0
+                  )}
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestDebt.p95.toFixed(0)}
+                  {convertValue(latestDebt.p95).toFixed(
+                    currency === "USD" ? 2 : 0
+                  )}
                 </td>
               </tr>
               <tr className="border-b border-[var(--gray-200)] hover:bg-[var(--gray-50)]">
@@ -743,36 +884,52 @@ export function ResultsDashboard({
               </tr>
               <tr className="border-b border-[var(--gray-200)] hover:bg-[var(--gray-50)]">
                 <td className="py-3 px-4 text-[var(--gray-900)]">
-                  RIN (M USD)
+                  RIN ({getCurrencyUnit()})
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestRIN.mean.toFixed(0)}
+                  {convertValue(latestRIN.mean).toFixed(
+                    currency === "USD" ? 2 : 0
+                  )}
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestRIN.p05.toFixed(0)}
+                  {convertValue(latestRIN.p05).toFixed(
+                    currency === "USD" ? 2 : 0
+                  )}
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestRIN.p25.toFixed(0)}
+                  {convertValue(latestRIN.p25).toFixed(
+                    currency === "USD" ? 2 : 0
+                  )}
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestRIN.p95.toFixed(0)}
+                  {convertValue(latestRIN.p95).toFixed(
+                    currency === "USD" ? 2 : 0
+                  )}
                 </td>
               </tr>
               <tr className="hover:bg-[var(--gray-50)]">
                 <td className="py-3 px-4 text-[var(--gray-900)]">
-                  Déficit Fiscal (Millones Bs)
+                  Déficit Fiscal ({getCurrencyUnit()})
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestDeficit.mean.toFixed(0)}
+                  {convertValue(latestDeficit.mean).toFixed(
+                    currency === "USD" ? 2 : 0
+                  )}
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestDeficit.p05.toFixed(0)}
+                  {convertValue(latestDeficit.p05).toFixed(
+                    currency === "USD" ? 2 : 0
+                  )}
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestDeficit.p25.toFixed(0)}
+                  {convertValue(latestDeficit.p25).toFixed(
+                    currency === "USD" ? 2 : 0
+                  )}
                 </td>
                 <td className="text-right py-3 px-4">
-                  {latestDeficit.p95.toFixed(0)}
+                  {convertValue(latestDeficit.p95).toFixed(
+                    currency === "USD" ? 2 : 0
+                  )}
                 </td>
               </tr>
             </tbody>

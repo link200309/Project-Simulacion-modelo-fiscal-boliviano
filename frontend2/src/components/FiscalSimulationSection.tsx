@@ -128,7 +128,10 @@ export function FiscalSimulationSection({
             Ingresos por exportación de commodities (gas natural y minerales)
             con shocks estocásticos configurados en la sección anterior
           </li>
-          <li>Ingresos fiscales no relacionados con commodities (tributarios y otros)</li>
+          <li>
+            Ingresos fiscales no relacionados con commodities (tributarios y
+            otros)
+          </li>
           <li>
             Gasto público corriente más subsidios a combustibles ajustados por
             política fiscal
@@ -145,10 +148,12 @@ export function FiscalSimulationSection({
         </h4>
         <div className="space-y-2 text-[var(--gray-700)] font-mono text-sm">
           <div>
-            Ing_Minerales<sub>t</sub> = Ing_Zinc<sub>t</sub> + Ing_Plata<sub>t</sub> + Ing_Plomo<sub>t</sub> + Ing_Estaño<sub>t</sub>
+            Ing_Minerales<sub>t</sub> = Ing_Zinc<sub>t</sub> + Ing_Plata
+            <sub>t</sub> + Ing_Plomo<sub>t</sub> + Ing_Estaño<sub>t</sub>
           </div>
           <div>
-            Ing_Zinc<sub>t</sub> = Ing_Zinc<sub>0</sub> × (1 + g)<sup>t</sup> × Shock_Zinc<sub>t</sub>
+            Ing_Zinc<sub>t</sub> = Ing_Zinc<sub>0</sub> × (1 + g)<sup>t</sup> ×
+            Shock_Zinc<sub>t</sub>
           </div>
           <div>
             Ingresos<sub>t</sub> = Ing_NoCommodities<sub>t</sub> + Ing_Gas
