@@ -9,6 +9,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Brush,
 } from "recharts";
 
 interface ShockConfig {
@@ -254,7 +255,11 @@ export function StochasticShocksSection({
           <h4 className="text-[var(--gray-800)] mb-4">
             Vista Previa: Trayectorias Esperadas
           </h4>
-          <ResponsiveContainer width="100%" height={300}>
+          <p className="text-[var(--gray-600)] text-sm mb-3">
+            Usa el control deslizante en la parte inferior para navegar por
+            los años
+          </p>
+          <ResponsiveContainer width="100%" height={450}>
             <LineChart data={previewData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-300)" />
               <XAxis dataKey="year" stroke="var(--gray-600)" />
@@ -273,22 +278,36 @@ export function StochasticShocksSection({
                   borderRadius: "8px",
                   color: "white",
                 }}
+                formatter={(value: any) => `$${Number(value).toFixed(2)}`}
               />
               <Legend />
               {shockConfigs
                 .filter((c) => c.enabled)
-                .map((config, i) => (
-                  <Line
-                    key={config.commodity}
-                    type="monotone"
-                    dataKey={config.commodity}
-                    stroke={
-                      i === 0 ? "var(--bolivia-green)" : "var(--bolivia-yellow)"
-                    }
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                ))}
+                .map((config, i) => {
+                  const colors = [
+                    "#00A878", // Verde - Gas Natural
+                    "#3b82f6", // Azul - Zinc
+                    "#f59e0b", // Naranja - Plata
+                    "#ef4444", // Rojo - Plomo
+                    "#8b5cf6", // Púrpura - Estaño
+                  ];
+                  return (
+                    <Line
+                      key={config.commodity}
+                      type="monotone"
+                      dataKey={config.commodity}
+                      stroke={colors[i % colors.length]}
+                      strokeWidth={2.5}
+                      dot={false}
+                    />
+                  );
+                })}
+              <Brush
+                dataKey="year"
+                height={30}
+                stroke="#00A878"
+                fill="#f3f4f6"
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>

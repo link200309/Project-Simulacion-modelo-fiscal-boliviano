@@ -38,6 +38,7 @@ interface SimulationResponse {
     ingresos_estano: number[];
     ingresos_minerales: number[];
     ingresos_commodities: number[];
+    ingresos_totales: number[];
     ratio_deuda_pib_p05: number[];
     ratio_deuda_pib_p25: number[];
     ratio_deuda_pib_p75: number[];
@@ -213,6 +214,10 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
     ingresosCommodities: years.map((year, index) => ({
       year,
       value: data.ingresos_commodities?.[index] || 0,
+    })),
+    ingresosTotales: years.map((year, index) => ({
+      year,
+      value: data.ingresos_totales?.[index] || 0,
     })),
   };
 };

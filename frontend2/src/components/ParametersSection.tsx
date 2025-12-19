@@ -39,34 +39,66 @@ export function ParametersSection({
   const [saved, setSaved] = useState(false);
   const [sensitivityResults, setSensitivityResults] = useState<any>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [currency, setCurrency] = useState<"Bs" | "USD">("Bs");
+
+  // Tipo de cambio aproximado Bs/USD (puede ajustarse)
+  const EXCHANGE_RATE = 6.96;
 
   const handleSave = () => {
+    // Los parámetros se guardan siempre en millones de Bs (unidad del modelo)
     onParametersChange(localParams);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  // Convertir valor del modelo (millones Bs) a la unidad seleccionada para mostrar
+  const convertToDisplay = (
+    valueInMillionsBs: number,
+    isMonetary: boolean
+  ): number => {
+    if (!isMonetary) return valueInMillionsBs; // Porcentajes no se convierten
+    if (currency === "USD") {
+      return valueInMillionsBs / EXCHANGE_RATE;
+    }
+    return valueInMillionsBs;
+  };
+
+  // Convertir valor ingresado por usuario a millones de Bs (unidad del modelo)
+  const convertToModel = (
+    displayValue: number,
+    isMonetary: boolean
+  ): number => {
+    if (!isMonetary) return displayValue; // Porcentajes no se convierten
+    if (currency === "USD") {
+      return displayValue * EXCHANGE_RATE;
+    }
+    return displayValue;
   };
 
   const parameterFields = [
     {
       key: "deudaInternaInicial" as keyof Parameters,
       label: "Deuda Inicial Interna",
-      unit: "millones Bs",
+      unit: currency === "Bs" ? "millones Bs" : "millones USD",
       help: "Deuda pública interna al inicio del período (2020)",
       color: "red",
+      isMonetary: true,
     },
     {
       key: "deudaExternaInicial" as keyof Parameters,
       label: "Deuda Inicial Externa",
-      unit: "millones Bs",
+      unit: currency === "Bs" ? "millones Bs" : "millones USD",
       help: "Deuda pública externa al inicio del período (2020)",
       color: "red",
+      isMonetary: true,
     },
     {
       key: "rinInicial" as keyof Parameters,
       label: "Reservas Internacionales Netas (RIN)",
-      unit: "millones Bs",
+      unit: currency === "Bs" ? "millones Bs" : "millones USD",
       help: "Reservas internacionales netas iniciales",
       color: "green",
+      isMonetary: true,
     },
     {
       key: "tasaCrecimientoPIB" as keyof Parameters,
@@ -74,6 +106,7 @@ export function ParametersSection({
       unit: "%",
       help: "Tasa de crecimiento económico esperada anual",
       color: "yellow",
+      isMonetary: false,
     },
     {
       key: "tasaInteresExterna" as keyof Parameters,
@@ -81,6 +114,7 @@ export function ParametersSection({
       unit: "%",
       help: "Tasa de interés promedio para deuda externa",
       color: "yellow",
+      isMonetary: false,
     },
   ];
 
@@ -161,47 +195,59 @@ export function ParametersSection({
     <div className="space-y-6">
       {/* Guía de flujo */}
       <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-400 rounded-xl p-6">
-        <h3 className="text-[var(--gray-900)] mb-3">
-          {" "}
+        <h3 className="text-[var(--gray-900)] mb-3 font-semibold">
           Guía de Uso del Simulador
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
           <div className="flex items-start gap-2">
-            <span className="bg-[var(--bolivia-green)] text-white px-2 py-1 rounded">
+            <span className="bg-[var(--bolivia-green)] text-white px-2 py-1 rounded font-bold">
               1
             </span>
             <div>
-              <div className="text-[var(--gray-900)]">
-                Configure parámetros iniciales y política fiscal
+              <div className="text-[var(--gray-900)] font-medium">
+                Parámetros y Política Fiscal
               </div>
               <small className="text-[var(--gray-600)]">
-                Defina valores base del modelo
+                Configure valores iniciales y política de subsidios
               </small>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <span className="bg-[var(--bolivia-yellow)] text-[var(--gray-900)] px-2 py-1 rounded">
+            <span className="bg-[var(--bolivia-yellow)] text-[var(--gray-900)] px-2 py-1 rounded font-bold">
               2
             </span>
             <div>
-              <div className="text-[var(--gray-900)]">
-                Analice impacto parcial (opcional)
+              <div className="text-[var(--gray-900)] font-medium">
+                Shocks Estocásticos
               </div>
               <small className="text-[var(--gray-600)]">
-                Visualice efecto de subsidios
+                Genere volatilidad en commodities
               </small>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <span className="bg-[var(--bolivia-red)] text-white px-2 py-1 rounded">
+            <span className="bg-[var(--bolivia-yellow)] px-2 py-1 rounded font-bold">
               3
             </span>
             <div>
-              <div className="text-[var(--gray-900)]">
-                Ejecute simulación completa
+              <div className="text-[var(--gray-900)] font-medium">
+                Ejecutar Simulación
               </div>
               <small className="text-[var(--gray-600)]">
-                Obtenga resultados finales
+                Obtenga resultados completos
+              </small>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="bg-[var(--bolivia-red)] text-white px-2 py-1 rounded font-bold">
+              4
+            </span>
+            <div>
+              <div className="text-[var(--gray-900)] font-medium">
+                Descargar Resultados
+              </div>
+              <small className="text-[var(--gray-600)]">
+                Descargue datos en diversos formatos
               </small>
             </div>
           </div>
@@ -220,6 +266,39 @@ export function ParametersSection({
           </p>
         </div>
 
+        {/* Selector de moneda */}
+        <div className="mb-4 flex items-center justify-between">
+          <label className="text-sm text-[var(--gray-600)] flex items-center gap-2">
+            <Info className="w-4 h-4" />
+            Unidad de visualización:
+          </label>
+          <div className="flex gap-2 bg-[var(--gray-100)] rounded-lg p-1">
+            <button
+              onClick={() => setCurrency("Bs")}
+              className={`px-3 py-1 rounded text-sm font-medium transition-all p-3 ${
+                currency === "Bs"
+                  ? "bg-white text-[var(--gray-900)] shadow-sm"
+                  : "text-[var(--gray-600)] hover:text-[var(--gray-900)]"
+              }`}
+            >
+              Bs
+            </button>
+            <button
+              onClick={() => setCurrency("USD")}
+              className={`px-3 py-1 rounded text-sm font-medium transition-all p-3 ${
+                currency === "USD"
+                  ? "bg-white text-[var(--gray-900)] shadow-sm"
+                  : "text-[var(--gray-600)] hover:text-[var(--gray-900)]"
+              }`}
+            >
+              USD
+            </button>
+          </div>
+          <span className="text-xs text-[var(--gray-500)]">
+            TC: 1 USD = {EXCHANGE_RATE} Bs
+          </span>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {parameterFields.map((field) => (
             <div key={field.key} className="space-y-2">
@@ -235,15 +314,29 @@ export function ParametersSection({
               <div className="relative">
                 <input
                   type="number"
-                  value={localParams[field.key] as number}
-                  onChange={(e) =>
+                  value={convertToDisplay(
+                    localParams[field.key] as number,
+                    field.isMonetary
+                  ).toFixed(field.isMonetary && currency === "USD" ? 2 : 0)}
+                  onChange={(e) => {
+                    const displayValue = parseFloat(e.target.value) || 0;
+                    const modelValue = convertToModel(
+                      displayValue,
+                      field.isMonetary
+                    );
                     setLocalParams({
                       ...localParams,
-                      [field.key]: parseFloat(e.target.value) || 0,
-                    })
-                  }
+                      [field.key]: modelValue,
+                    });
+                  }}
                   className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
-                  step={field.unit === "%" ? "0.1" : "100"}
+                  step={
+                    field.unit.includes("%")
+                      ? "0.1"
+                      : currency === "USD" && field.isMonetary
+                      ? "0.01"
+                      : "100"
+                  }
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
                   {field.unit}
@@ -265,25 +358,6 @@ export function ParametersSection({
             Configure la política de reducción de subsidios a combustibles que
             se aplicará durante la simulación fiscal.
           </p>
-
-          {/* CORRECCIÓN 1: Explicación del modelo sin gasto corriente base */}
-          <div className="bg-amber-50 border-2 border-amber-400 rounded-lg p-4 mb-4">
-            <h4 className="text-[var(--gray-900)] mb-2">
-              {" "}
-              Análisis de Variaciones Marginales
-            </h4>
-            <div className="space-y-2 font-mono text-sm text-[var(--gray-700)]">
-              <div>
-                <strong>Ahorro_Subsidios</strong> = Subsidios_Base ×
-                (Porcentaje_Reducción / 100)
-              </div>
-              <div>
-                <strong>Impacto_Déficit</strong> = (Ahorro_Subsidios / PIB) ×
-                100
-              </div>
-              <div className="text-xs text-[var(--gray-600)] mt-2"></div>
-            </div>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -291,7 +365,7 @@ export function ParametersSection({
             {/* CORRECCIÓN 4: Slider para estimación base de subsidios */}
             <div>
               <label className="block text-[var(--gray-700)] mb-3">
-                Estimación Base de Subsidios a Combustibles
+                Estimación Base de Subsidios a Combustibles (USD)
               </label>
               <div className="flex items-center gap-4">
                 <input
@@ -300,17 +374,17 @@ export function ParametersSection({
                   max="3000"
                   step="100"
                   value={localParams.subsidiosBase}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     setLocalParams({
                       ...localParams,
                       subsidiosBase: parseInt(e.target.value),
-                    })
-                  }
+                    });
+                  }}
                   className="flex-1 accent-[var(--bolivia-yellow)]"
                 />
-                <div className="min-w-[120px] text-center">
-                  <div className="px-4 py-2 bg-[var(--bolivia-yellow)] text-[var(--gray-900)] rounded-lg">
-                    ${localParams.subsidiosBase} M
+                <div className="min-w-[140px] text-center">
+                  <div className="px-4 py-2 bg-[var(--bolivia-yellow)] text-[var(--gray-900)] rounded-lg text-sm">
+                    ${localParams.subsidiosBase} M USD
                   </div>
                 </div>
               </div>
@@ -410,7 +484,7 @@ export function ParametersSection({
                   Subsidios Base Configurados
                 </div>
                 <div className="text-[var(--gray-900)] text-2xl">
-                  ${localParams.subsidiosBase.toLocaleString()} M
+                  ${localParams.subsidiosBase.toLocaleString()} M USD
                 </div>
               </div>
 
@@ -421,7 +495,7 @@ export function ParametersSection({
                 <div className="text-[var(--bolivia-green)] text-2xl">
                   $
                   {ahorroAnual.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                  M
+                  M USD
                 </div>
               </div>
 
@@ -458,8 +532,8 @@ export function ParametersSection({
           {/* CORRECCIÓN 5: Texto aclaratorio */}
           <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mt-4">
             <p className="text-[var(--gray-700)] text-sm">
-              ℹ️ Este análisis muestra el impacto fiscal estimado de la política
-              de subsidios. Los resultados finales del modelo se obtienen al
+              Este análisis muestra el impacto fiscal estimado de la política de
+              subsidios. Los resultados finales del modelo se obtienen al
               ejecutar la simulación fiscal completa.
             </p>
           </div>
@@ -567,6 +641,15 @@ export function ParametersSection({
                       border: "none",
                       borderRadius: "8px",
                       color: "white",
+                    }}
+                    labelStyle={{ color: "white" }}
+                    itemStyle={{ color: "white" }}
+                    formatter={(value: any, name: string) => {
+                      const numValue = Number(value);
+                      if (name === "% Reducción Aplicado") {
+                        return numValue.toFixed(1) + "%";
+                      }
+                      return numValue.toFixed(2);
                     }}
                   />
                   <Legend />

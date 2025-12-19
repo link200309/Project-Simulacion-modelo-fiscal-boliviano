@@ -85,6 +85,17 @@ def ejecutar_simulacion(parametros_usuario=None):
             "prob_deuda_gt_80": float((resultados["ratio_deuda_pib"][:, -1] > 0.80).mean() * 100),
             "prob_deuda_gt_90": float((resultados["ratio_deuda_pib"][:, -1] > 0.90).mean() * 100),
             "prob_rin_lt_10mil": float((resultados["RIN"][:, -1] < 10_000).mean() * 100),
-        }
+        },
+        
+        # Datos de gastos e ingresos para gráficos de composición fiscal
+        "gastos": resultados["gastos"].mean(axis=0).tolist(),
+        "gasto_sin_subsidio": resultados["gasto_sin_subsidio"].mean(axis=0).tolist(),
+        "subsidios": resultados["subsidios"].mean(axis=0).tolist(),
+        "ingresos_gas": resultados["ingresos_gas"].mean(axis=0).tolist(),
+        "ingresos_zinc": resultados["ingresos_zinc"].mean(axis=0).tolist(),
+        "ingresos_plata": resultados["ingresos_plata"].mean(axis=0).tolist(),
+        "ingresos_plomo": resultados["ingresos_plomo"].mean(axis=0).tolist(),
+        "ingresos_estano": resultados["ingresos_estano"].mean(axis=0).tolist(),
+        "ingresos_totales": resultados["ingresos_totales"].mean(axis=0).tolist(),
     }
     return salida
