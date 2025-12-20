@@ -67,7 +67,7 @@ export function ResultsDashboard({
     );
   }
 
-  const { deudaTotal, deudaPIB, rin, deficitFiscal } = results;
+  const { deudaTotal, deudaPIB, rin, deficitFiscal, inflacion } = results;
 
   // Preparar datos para distribución del déficit final
   const finalDeficit = deficitFiscal[deficitFiscal.length - 1];
@@ -97,6 +97,7 @@ export function ResultsDashboard({
   const latestDebtGDP = deudaPIB[deudaPIB.length - 1];
   const latestRIN = rin[rin.length - 1];
   const latestDeficit = deficitFiscal[deficitFiscal.length - 1];
+  const latestInflacion = inflacion?.[inflacion.length - 1];
 
   // Calcular datos reales de gastos e ingresos del modelo (año final 2025)
   // Los datos llegan como arrays de {year, value}
@@ -116,33 +117,127 @@ export function ResultsDashboard({
     results.ingresosPlomo?.[results.ingresosPlomo.length - 1]?.value || 0;
   const ingresosEstanoFinal =
     results.ingresosEstano?.[results.ingresosEstano.length - 1]?.value || 0;
+  const ingresosOroFinal =
+    results.ingresosOro?.[results.ingresosOro.length - 1]?.value || 0;
   const ingresosCommoditiesFinal =
     ingresosGasFinal +
     ingresosZincFinal +
     ingresosPlataFinal +
     ingresosPlomoFinal +
-    ingresosEstanoFinal;
+    ingresosEstanoFinal +
+    ingresosOroFinal;
 
-  // Calcular ingresos no commodities usando datos del modelo
-  const ingresosTotalesFinal =
-    results.ingresosTotales?.[results.ingresosTotales.length - 1]?.value || 0;
-  const ingresosNoCommod = ingresosTotalesFinal - ingresosCommoditiesFinal;
+  // Obtener ingresos tributarios y no tributarios desglosados
+  const ingresosIVAFinal =
+    results.ingresosIVA?.[results.ingresosIVA.length - 1]?.value || 0;
+  const ingresosITFinal =
+    results.ingresosIT?.[results.ingresosIT.length - 1]?.value || 0;
+  const ingresosIUEFinal =
+    results.ingresosIUE?.[results.ingresosIUE.length - 1]?.value || 0;
+  const ingresosRCIVAFinal =
+    results.ingresosRCIVA?.[results.ingresosRCIVA.length - 1]?.value || 0;
+  const ingresosICEFinal =
+    results.ingresosICE?.[results.ingresosICE.length - 1]?.value || 0;
+  const ingresosGAFinal =
+    results.ingresosGA?.[results.ingresosGA.length - 1]?.value || 0;
+  const ingresosIEHDFinal =
+    results.ingresosIEHD?.[results.ingresosIEHD.length - 1]?.value || 0;
+  const ingresosOtrosTributariosFinal =
+    results.ingresosOtrosTributarios?.[
+      results.ingresosOtrosTributarios.length - 1
+    ]?.value || 0;
+  const ingresosRegaliasFinal =
+    results.ingresosRegalias?.[results.ingresosRegalias.length - 1]?.value || 0;
+  const ingresosOtrosNoTributariosFinal =
+    results.ingresosOtrosNoTributarios?.[
+      results.ingresosOtrosNoTributarios.length - 1
+    ]?.value || 0;
+
+  // Calcular totales de ingresos tributarios
+  const ingresosTributariosFinal =
+    ingresosIVAFinal +
+    ingresosITFinal +
+    ingresosIUEFinal +
+    ingresosRCIVAFinal +
+    ingresosICEFinal +
+    ingresosGAFinal +
+    ingresosIEHDFinal +
+    ingresosOtrosTributariosFinal;
+
+  // Obtener componentes del gasto desglosados
+  const gastoCorrienteFinal =
+    results.gastoCorriente?.[results.gastoCorriente.length - 1]?.value || 0;
+  const transferenciasSocialesFinal =
+    results.transferenciasSociales?.[results.transferenciasSociales.length - 1]
+      ?.value || 0;
+  const inversionPublicaFinal =
+    results.inversionPublica?.[results.inversionPublica.length - 1]?.value || 0;
 
   // Datos para gráficos de pastel con valores reales del modelo
   const gastoPublicoData = [
-    { name: "Gasto Corriente", value: gastoSinSubsidioFinal, fill: "#D72638" },
+    { name: "Gasto Corriente", value: gastoCorrienteFinal, fill: "#D72638" },
+    {
+      name: "Transferencias Sociales",
+      value: transferenciasSocialesFinal,
+      fill: "#f59e0b",
+    },
+    {
+      name: "Inversión Pública",
+      value: inversionPublicaFinal,
+      fill: "#3b82f6",
+    },
     { name: "Subsidios", value: subsidioFinal, fill: "#FFC857" },
   ].filter((item) => item.value > 0);
 
   const ingresosData = [
     {
-      name: "Ingresos Commodities",
+      name: "Commodities",
       value: ingresosCommoditiesFinal,
       fill: "#00A878",
     },
     {
-      name: "Ingresos No Commodities",
-      value: ingresosNoCommod,
+      name: "IVA",
+      value: ingresosIVAFinal,
+      fill: "#3b82f6",
+    },
+    {
+      name: "IT",
+      value: ingresosITFinal,
+      fill: "#8b5cf6",
+    },
+    {
+      name: "IUE",
+      value: ingresosIUEFinal,
+      fill: "#f59e0b",
+    },
+    {
+      name: "RC-IVA",
+      value: ingresosRCIVAFinal,
+      fill: "#10b981",
+    },
+    {
+      name: "ICE",
+      value: ingresosICEFinal,
+      fill: "#ef4444",
+    },
+    {
+      name: "GA",
+      value: ingresosGAFinal,
+      fill: "#ec4899",
+    },
+    {
+      name: "IEHD",
+      value: ingresosIEHDFinal,
+      fill: "#f97316",
+    },
+    {
+      name: "Regalías",
+      value: ingresosRegaliasFinal,
+      fill: "#14b8a6",
+    },
+    {
+      name: "Otros",
+      value: ingresosOtrosTributariosFinal + ingresosOtrosNoTributariosFinal,
       fill: "#6B7280",
     },
   ].filter((item) => item.value > 0);
@@ -192,8 +287,8 @@ export function ResultsDashboard({
         </div>
 
         {/* KPIs Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-gradient-to-br from-red-50 to-white border-2 border-[var(--bolivia-red)] rounded-lg p-4">
+        <div className="flex flex-wrap gap-4 mb-8">
+          <div className="flex-1 min-w-[200px] bg-gradient-to-br from-red-50 to-white border-2 border-[var(--bolivia-red)] rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-5 h-5 text-[var(--bolivia-red)]" />
               <span className="text-[var(--gray-600)]">Deuda Total 2025</span>
@@ -206,7 +301,7 @@ export function ResultsDashboard({
             </small>
           </div>
 
-          <div className="bg-gradient-to-br from-yellow-50 to-white border-2 border-[var(--bolivia-yellow)] rounded-lg p-4">
+          <div className="flex-1 min-w-[200px] bg-gradient-to-br from-yellow-50 to-white border-2 border-[var(--bolivia-yellow)] rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <BarChart3 className="w-5 h-5 text-[var(--bolivia-yellow)]" />
               <span className="text-[var(--gray-600)]">Deuda/PIB 2025</span>
@@ -217,7 +312,7 @@ export function ResultsDashboard({
             <small className="text-[var(--gray-500)]">Ratio promedio</small>
           </div>
 
-          <div className="bg-gradient-to-br from-green-50 to-white border-2 border-[var(--bolivia-green)] rounded-lg p-4">
+          <div className="flex-1 min-w-[200px] bg-gradient-to-br from-green-50 to-white border-2 border-[var(--bolivia-green)] rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <DollarSign className="w-5 h-5 text-[var(--bolivia-green)]" />
               <span className="text-[var(--gray-600)]">RIN 2025</span>
@@ -230,7 +325,7 @@ export function ResultsDashboard({
             </small>
           </div>
 
-          <div className="bg-gradient-to-br from-orange-50 to-white border-2 border-orange-500 rounded-lg p-4">
+          <div className="flex-1 min-w-[200px] bg-gradient-to-br from-orange-50 to-white border-2 border-orange-500 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <TrendingDown className="w-5 h-5 text-orange-500" />
               <span className="text-[var(--gray-600)]">Déficit 2025</span>
@@ -240,6 +335,19 @@ export function ResultsDashboard({
             </div>
             <small className="text-[var(--gray-500)]">
               Déficit fiscal promedio
+            </small>
+          </div>
+
+          <div className="flex-1 min-w-[200px] bg-gradient-to-br from-blue-50 to-white border-2 border-blue-500 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-5 h-5 text-blue-500" />
+              <span className="text-[var(--gray-600)]">Inflación 2025</span>
+            </div>
+            <div className="text-blue-500 text-2xl">
+              {latestInflacion ? latestInflacion.mean.toFixed(2) : "0.00"}%
+            </div>
+            <small className="text-[var(--gray-500)]">
+              Tasa promedio anual
             </small>
           </div>
         </div>
@@ -497,6 +605,70 @@ export function ResultsDashboard({
             </small>
           </p>
         </div>
+
+        {/* Inflación */}
+        {inflacion && (
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <h3 className="text-[var(--gray-800)] mb-4">
+              Evolución de la Inflación Anual
+            </h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={inflacion}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-300)" />
+                <XAxis dataKey="year" stroke="var(--gray-600)" />
+                <YAxis
+                  stroke="var(--gray-600)"
+                  label={{
+                    value: "% Anual",
+                    angle: -90,
+                    position: "insideLeft",
+                  }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--gray-900)",
+                    border: "none",
+                    borderRadius: "8px",
+                    color: "white",
+                  }}
+                  formatter={(value: any) => `${value.toFixed(2)}%`}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="p90"
+                  stroke="#93C5FD"
+                  strokeWidth={1}
+                  strokeDasharray="5 5"
+                  name="P90"
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="mean"
+                  stroke="#3B82F6"
+                  strokeWidth={3}
+                  name="Media"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="p10"
+                  stroke="#1E40AF"
+                  strokeWidth={1}
+                  strokeDasharray="5 5"
+                  name="P10"
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+            <p className="text-[var(--gray-500)] mt-2 text-center">
+              <small>
+                Inflación influenciada por déficit fiscal y precios
+                internacionales (efecto parcial en tasas de interés)
+              </small>
+            </p>
+          </div>
+        )}
       </div>
 
       {/* CORRECCIÓN 6: Gráficos de Pastel */}
@@ -932,6 +1104,25 @@ export function ResultsDashboard({
                   )}
                 </td>
               </tr>
+              {latestInflacion && (
+                <tr className="border-t border-[var(--gray-200)] hover:bg-[var(--gray-50)]">
+                  <td className="py-3 px-4 text-[var(--gray-900)]">
+                    Inflación (%)
+                  </td>
+                  <td className="text-right py-3 px-4">
+                    {latestInflacion.mean.toFixed(2)}
+                  </td>
+                  <td className="text-right py-3 px-4">
+                    {latestInflacion.p05.toFixed(2)}
+                  </td>
+                  <td className="text-right py-3 px-4">
+                    {latestInflacion.p25.toFixed(2)}
+                  </td>
+                  <td className="text-right py-3 px-4">
+                    {latestInflacion.p95.toFixed(2)}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

@@ -6,24 +6,36 @@ def ejecutar_simulacion(parametros_usuario=None):
         parametros = Parametros()
     else:
         parametros = Parametros(
+            PIB0=parametros_usuario.get("pib_inicial", 257_600),
             deuda_int0=parametros_usuario.get("deuda_interna", 69_300),
             deuda_ext0=parametros_usuario.get("deuda_externa", 82_800),
             RIN0=parametros_usuario.get("rin_inicial", 36_900),
             g_pib=parametros_usuario.get("tasa_crecimiento_pib", 0.022),
+            i_int=parametros_usuario.get("tasa_interes_deuda_interna", 0.025),
             i_ext=parametros_usuario.get("tasa_interes_deuda_externa", 0.051),
+            tipo_financiamiento=parametros_usuario.get("tipo_financiamiento", "Deuda"),
             sigma_gas=parametros_usuario.get("sigma_gas", 0.20),
             sigma_zinc=parametros_usuario.get("sigma_zinc", 0.25),
             sigma_plata=parametros_usuario.get("sigma_plata", 0.30),
             sigma_plomo=parametros_usuario.get("sigma_plomo", 0.22),
             sigma_estano=parametros_usuario.get("sigma_estano", 0.28),
+            sigma_oro=parametros_usuario.get("sigma_oro", 0.18),
             ingresos_zinc_0=parametros_usuario.get("ingresos_zinc_inicial", 2_500),
             ingresos_plata_0=parametros_usuario.get("ingresos_plata_inicial", 2_000),
             ingresos_plomo_0=parametros_usuario.get("ingresos_plomo_inicial", 1_500),
             ingresos_estano_0=parametros_usuario.get("ingresos_estano_inicial", 2_500),
+            ingresos_oro_0=parametros_usuario.get("ingresos_oro_inicial", 3_000),
+            precio_gas_0=parametros_usuario.get("precio_gas_base", 55.0),
+            precio_zinc_0=parametros_usuario.get("precio_zinc_base", 2200.0),
+            precio_plata_0=parametros_usuario.get("precio_plata_base", 20.0),
+            precio_plomo_0=parametros_usuario.get("precio_plomo_base", 1850.0),
+            precio_estano_0=parametros_usuario.get("precio_estano_base", 17000.0),
+            precio_oro_0=parametros_usuario.get("precio_oro_base", 1800.0),
             crecimiento_zinc_base=parametros_usuario.get("crecimiento_zinc", 0.012),
             crecimiento_plata_base=parametros_usuario.get("crecimiento_plata", 0.015),
             crecimiento_plomo_base=parametros_usuario.get("crecimiento_plomo", 0.010),
             crecimiento_estano_base=parametros_usuario.get("crecimiento_estano", 0.018),
+            crecimiento_oro_base=parametros_usuario.get("crecimiento_oro", 0.020),
             phi_deuda=parametros_usuario.get("phi_deuda", 0.02),
             n_sim=parametros_usuario.get("n_sim", 1000),
             reduccion_subsidio=parametros_usuario.get("reduccion_subsidios", 0.0),
@@ -50,6 +62,7 @@ def ejecutar_simulacion(parametros_usuario=None):
         "ingresos_plata": resultados["ingresos_plata"].mean(axis=0).tolist(),
         "ingresos_plomo": resultados["ingresos_plomo"].mean(axis=0).tolist(),
         "ingresos_estano": resultados["ingresos_estano"].mean(axis=0).tolist(),
+        "ingresos_oro": resultados["ingresos_oro"].mean(axis=0).tolist(),
         "ingresos_minerales": resultados["ingresos_minerales_totales"].mean(axis=0).tolist(),
         
         # Trayectorias de ingresos (muestra para visualización de shocks)
@@ -58,6 +71,7 @@ def ejecutar_simulacion(parametros_usuario=None):
         "trayectorias_plata": resultados["ingresos_plata"][indices_muestra, :].tolist(),
         "trayectorias_plomo": resultados["ingresos_plomo"][indices_muestra, :].tolist(),
         "trayectorias_estano": resultados["ingresos_estano"][indices_muestra, :].tolist(),
+        "trayectorias_oro": resultados["ingresos_oro"][indices_muestra, :].tolist(),
         
         # Trayectorias de precios (muestra para visualización)
         "trayectorias_precio_gas": resultados["precio_gas"][indices_muestra, :].tolist(),
@@ -65,6 +79,7 @@ def ejecutar_simulacion(parametros_usuario=None):
         "trayectorias_precio_plata": resultados["precio_plata"][indices_muestra, :].tolist(),
         "trayectorias_precio_plomo": resultados["precio_plomo"][indices_muestra, :].tolist(),
         "trayectorias_precio_estano": resultados["precio_estano"][indices_muestra, :].tolist(),
+        "trayectorias_precio_oro": resultados["precio_oro"][indices_muestra, :].tolist(),
         
         # Percentiles para análisis de riesgo (RF2)
         "ratio_deuda_pib_p05": np.percentile(resultados["ratio_deuda_pib"], 5, axis=0).tolist(),
@@ -96,6 +111,31 @@ def ejecutar_simulacion(parametros_usuario=None):
         "ingresos_plata": resultados["ingresos_plata"].mean(axis=0).tolist(),
         "ingresos_plomo": resultados["ingresos_plomo"].mean(axis=0).tolist(),
         "ingresos_estano": resultados["ingresos_estano"].mean(axis=0).tolist(),
+        "ingresos_oro": resultados["ingresos_oro"].mean(axis=0).tolist(),
         "ingresos_totales": resultados["ingresos_totales"].mean(axis=0).tolist(),
+        
+        # Desglose de ingresos tributarios y no tributarios
+        "ingresos_iva": resultados["ingresos_iva"].mean(axis=0).tolist(),
+        "ingresos_it": resultados["ingresos_it"].mean(axis=0).tolist(),
+        "ingresos_iue": resultados["ingresos_iue"].mean(axis=0).tolist(),
+        "ingresos_rc_iva": resultados["ingresos_rc_iva"].mean(axis=0).tolist(),
+        "ingresos_ice": resultados["ingresos_ice"].mean(axis=0).tolist(),
+        "ingresos_ga": resultados["ingresos_ga"].mean(axis=0).tolist(),
+        "ingresos_iehd": resultados["ingresos_iehd"].mean(axis=0).tolist(),
+        "ingresos_otros_tributarios": resultados["ingresos_otros_tributarios"].mean(axis=0).tolist(),
+        "ingresos_regalias": resultados["ingresos_regalias"].mean(axis=0).tolist(),
+        "ingresos_otros_no_tributarios": resultados["ingresos_otros_no_tributarios"].mean(axis=0).tolist(),
+        
+        # Desglose de componentes del gasto
+        "gasto_corriente": resultados["gasto_corriente"].mean(axis=0).tolist(),
+        "transferencias_sociales": resultados["transferencias_sociales"].mean(axis=0).tolist(),
+        "inversion_publica": resultados["inversion_publica"].mean(axis=0).tolist(),
+        
+        # Inflación
+        "inflacion_media": resultados["inflacion"].mean(axis=0).tolist(),
+        "inflacion_p05": np.percentile(resultados["inflacion"], 5, axis=0).tolist(),
+        "inflacion_p25": np.percentile(resultados["inflacion"], 25, axis=0).tolist(),
+        "inflacion_p75": np.percentile(resultados["inflacion"], 75, axis=0).tolist(),
+        "inflacion_p95": np.percentile(resultados["inflacion"], 95, axis=0).tolist(),
     }
     return salida

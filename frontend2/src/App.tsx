@@ -20,6 +20,9 @@ export default function App() {
     subsidyReduction: 0,
     reductionType: "gradual" as "discrete" | "gradual",
     subsidiosBase: 12000,
+    pibInicial: 257600,
+    tipoFinanciamiento: "Deuda" as "RIN" | "Deuda",
+    tasaInteresInterna: 2.5,
   });
 
   const [shocks, setShocks] = useState<any>(null);

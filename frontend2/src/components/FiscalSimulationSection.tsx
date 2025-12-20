@@ -52,6 +52,10 @@ export function FiscalSimulationSection({
       const estanoShock = shocks?.configs?.find(
         (c: any) => c.commodity === "Estaño"
       );
+      const oroShock = shocks?.configs?.find((c: any) => c.commodity === "Oro");
+
+      // Obtener precios base desde shocks
+      const preciosBase = shocks?.preciosBase || {};
 
       // Preparar parámetros para el backend
       const backendParams = {
@@ -60,11 +64,22 @@ export function FiscalSimulationSection({
         rin_inicial: parameters.rinInicial,
         tasa_crecimiento_pib: parameters.tasaCrecimientoPIB / 100,
         tasa_interes_deuda_externa: parameters.tasaInteresExterna / 100,
+        tasa_interes_deuda_interna:
+          (parameters.tasaInteresInterna || 2.5) / 100,
+        pib_inicial: parameters.pibInicial || 257600,
+        tipo_financiamiento: parameters.tipoFinanciamiento || "Deuda",
         sigma_gas: gasShock?.volatilidad || 0.2,
         sigma_zinc: zincShock?.volatilidad || 0.25,
         sigma_plata: plataShock?.volatilidad || 0.3,
         sigma_plomo: plomoShock?.volatilidad || 0.22,
         sigma_estano: estanoShock?.volatilidad || 0.28,
+        sigma_oro: oroShock?.volatilidad || 0.18,
+        precio_gas_base: preciosBase["Gas Natural"] || 55.0,
+        precio_zinc_base: preciosBase["Zinc"] || 2200.0,
+        precio_plata_base: preciosBase["Plata"] || 20.0,
+        precio_plomo_base: preciosBase["Plomo"] || 1850.0,
+        precio_estano_base: preciosBase["Estaño"] || 17000.0,
+        precio_oro_base: preciosBase["Oro"] || 1800.0,
         phi_deuda: 0.02,
         n_sim: 1000,
         reduccion_subsidios: parameters.subsidyReduction / 100,

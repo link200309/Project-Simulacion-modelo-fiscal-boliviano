@@ -10,11 +10,21 @@ interface SimulationRequest {
   rin_inicial?: number;
   tasa_crecimiento_pib?: number;
   tasa_interes_deuda_externa?: number;
+  tasa_interes_deuda_interna?: number;
+  pib_inicial?: number;
+  tipo_financiamiento?: "RIN" | "Deuda";
   sigma_gas?: number;
   sigma_zinc?: number;
   sigma_plata?: number;
   sigma_plomo?: number;
   sigma_estano?: number;
+  sigma_oro?: number;
+  precio_gas_base?: number;
+  precio_zinc_base?: number;
+  precio_plata_base?: number;
+  precio_plomo_base?: number;
+  precio_estano_base?: number;
+  precio_oro_base?: number;
   phi_deuda?: number;
   n_sim?: number;
   reduccion_subsidios?: number;
@@ -36,9 +46,28 @@ interface SimulationResponse {
     ingresos_plata: number[];
     ingresos_plomo: number[];
     ingresos_estano: number[];
+    ingresos_oro: number[];
     ingresos_minerales: number[];
     ingresos_commodities: number[];
     ingresos_totales: number[];
+    ingresos_iva: number[];
+    ingresos_it: number[];
+    ingresos_iue: number[];
+    ingresos_rc_iva: number[];
+    ingresos_ice: number[];
+    ingresos_ga: number[];
+    ingresos_iehd: number[];
+    ingresos_otros_tributarios: number[];
+    ingresos_regalias: number[];
+    ingresos_otros_no_tributarios: number[];
+    gasto_corriente: number[];
+    transferencias_sociales: number[];
+    inversion_publica: number[];
+    inflacion_media: number[];
+    inflacion_p05: number[];
+    inflacion_p25: number[];
+    inflacion_p75: number[];
+    inflacion_p95: number[];
     ratio_deuda_pib_p05: number[];
     ratio_deuda_pib_p25: number[];
     ratio_deuda_pib_p75: number[];
@@ -168,11 +197,25 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
     distribution: year === 2025 ? data.deficit_2025_distribution || [] : [],
   }));
 
+  // Transform inflation data (backend sends as decimal, convert to percentage)
+  const inflacion = years.map((year, index) => ({
+    year,
+    mean: (data.inflacion_media?.[index] || 0) * 100,
+    p05: (data.inflacion_p05?.[index] || 0) * 100,
+    p10: (data.inflacion_p05?.[index] || 0) * 100,
+    p25: (data.inflacion_p25?.[index] || 0) * 100,
+    p50: (data.inflacion_media?.[index] || 0) * 100,
+    p75: (data.inflacion_p75?.[index] || 0) * 100,
+    p90: (data.inflacion_p95?.[index] || 0) * 100,
+    p95: (data.inflacion_p95?.[index] || 0) * 100,
+  }));
+
   return {
     deudaTotal,
     deudaPIB,
     rin,
     deficitFiscal,
+    inflacion,
     riskIndicators: data.indicadores_riesgo,
     numSimulaciones: 1000,
     gastos: years.map((year, index) => ({
@@ -207,6 +250,10 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
       year,
       value: data.ingresos_estano?.[index] || 0,
     })),
+    ingresosOro: years.map((year, index) => ({
+      year,
+      value: data.ingresos_oro?.[index] || 0,
+    })),
     ingresosMinerales: years.map((year, index) => ({
       year,
       value: data.ingresos_minerales?.[index] || 0,
@@ -218,6 +265,58 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
     ingresosTotales: years.map((year, index) => ({
       year,
       value: data.ingresos_totales?.[index] || 0,
+    })),
+    ingresosIVA: years.map((year, index) => ({
+      year,
+      value: data.ingresos_iva?.[index] || 0,
+    })),
+    ingresosIT: years.map((year, index) => ({
+      year,
+      value: data.ingresos_it?.[index] || 0,
+    })),
+    ingresosIUE: years.map((year, index) => ({
+      year,
+      value: data.ingresos_iue?.[index] || 0,
+    })),
+    ingresosRCIVA: years.map((year, index) => ({
+      year,
+      value: data.ingresos_rc_iva?.[index] || 0,
+    })),
+    ingresosICE: years.map((year, index) => ({
+      year,
+      value: data.ingresos_ice?.[index] || 0,
+    })),
+    ingresosGA: years.map((year, index) => ({
+      year,
+      value: data.ingresos_ga?.[index] || 0,
+    })),
+    ingresosIEHD: years.map((year, index) => ({
+      year,
+      value: data.ingresos_iehd?.[index] || 0,
+    })),
+    ingresosOtrosTributarios: years.map((year, index) => ({
+      year,
+      value: data.ingresos_otros_tributarios?.[index] || 0,
+    })),
+    ingresosRegalias: years.map((year, index) => ({
+      year,
+      value: data.ingresos_regalias?.[index] || 0,
+    })),
+    ingresosOtrosNoTributarios: years.map((year, index) => ({
+      year,
+      value: data.ingresos_otros_no_tributarios?.[index] || 0,
+    })),
+    gastoCorriente: years.map((year, index) => ({
+      year,
+      value: data.gasto_corriente?.[index] || 0,
+    })),
+    transferenciasSociales: years.map((year, index) => ({
+      year,
+      value: data.transferencias_sociales?.[index] || 0,
+    })),
+    inversionPublica: years.map((year, index) => ({
+      year,
+      value: data.inversion_publica?.[index] || 0,
     })),
   };
 };

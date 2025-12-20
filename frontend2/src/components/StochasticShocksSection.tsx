@@ -52,9 +52,24 @@ export function StochasticShocksSection({
       volatilidad: 0.28,
       enabled: true,
     },
+    {
+      commodity: "Oro",
+      volatilidad: 0.18,
+      enabled: true,
+    },
   ]);
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Precios base editables por el usuario
+  const [preciosBase, setPreciosBase] = useState<{ [key: string]: number }>({
+    "Gas Natural": 55.0, // USD/MMBTU
+    Zinc: 2200.0, // USD/tonelada
+    Plata: 20.0, // USD/onza troy
+    Plomo: 1850.0, // USD/tonelada
+    Estaño: 17000.0, // USD/tonelada
+    Oro: 1800.0, // USD/onza troy
+  });
 
   const generateShocks = () => {
     setIsGenerating(true);
@@ -63,15 +78,6 @@ export function StochasticShocksSection({
     const years = 6; // 2020-2025
     const dt = 1;
     const previewSims = 50; // Mostrar 50 trayectorias en preview
-
-    // Precios base para cada commodity (valores iniciales 2020)
-    const preciosBase: { [key: string]: number } = {
-      "Gas Natural": 3.0, // USD/MMBTU
-      Zinc: 2200.0, // USD/tonelada
-      Plata: 20.0, // USD/onza troy
-      Plomo: 1850.0, // USD/tonelada
-      Estaño: 17000.0, // USD/tonelada
-    };
 
     const trajectories: any = {};
     const bandData: any = {}; // Datos de bandas P10-P90
@@ -146,6 +152,7 @@ export function StochasticShocksSection({
       chartData,
       numSimulaciones,
       configs: shockConfigs, // Pasar la configuración de shocks
+      preciosBase: preciosBase, // Pasar los precios base
     });
 
     setTimeout(() => setIsGenerating(false), 500);
@@ -217,6 +224,45 @@ export function StochasticShocksSection({
                     {(config.volatilidad * 100).toFixed(0)}%
                   </span>
                 </div>
+
+                <div>
+                  <label className="block text-[var(--gray-700)] mb-2">
+                    Precio Base (2020)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[var(--gray-600)] text-sm font-medium">
+                      USD
+                    </span>
+                    <input
+                      type="number"
+                      value={preciosBase[config.commodity]}
+                      onChange={(e) =>
+                        setPreciosBase({
+                          ...preciosBase,
+                          [config.commodity]: parseFloat(e.target.value) || 0,
+                        })
+                      }
+                      step={
+                        config.commodity === "Gas Natural"
+                          ? "1"
+                          : config.commodity === "Plata" ||
+                            config.commodity === "Oro"
+                          ? "10"
+                          : "100"
+                      }
+                      min="0"
+                      className="flex-1 px-3 py-2 border border-[var(--gray-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--bolivia-green)] text-[var(--gray-900)]"
+                    />
+                  </div>
+                  <span className="text-xs text-[var(--gray-500)] mt-1 block">
+                    {config.commodity === "Gas Natural"
+                      ? "USD/MMBTU"
+                      : config.commodity === "Plata" ||
+                        config.commodity === "Oro"
+                      ? "USD/onza troy"
+                      : "USD/tonelada"}
+                  </span>
+                </div>
               </div>
             )}
           </div>
@@ -256,8 +302,8 @@ export function StochasticShocksSection({
             Vista Previa: Trayectorias Esperadas
           </h4>
           <p className="text-[var(--gray-600)] text-sm mb-3">
-            Usa el control deslizante en la parte inferior para navegar por
-            los años
+            Usa el control deslizante en la parte inferior para navegar por los
+            años
           </p>
           <ResponsiveContainer width="100%" height={450}>
             <LineChart data={previewData}>
@@ -290,6 +336,7 @@ export function StochasticShocksSection({
                     "#f59e0b", // Naranja - Plata
                     "#ef4444", // Rojo - Plomo
                     "#8b5cf6", // Púrpura - Estaño
+                    "#FFD700", // Dorado - Oro
                   ];
                   return (
                     <Line
