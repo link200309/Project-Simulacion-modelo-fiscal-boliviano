@@ -223,7 +223,7 @@ def shocks_inflacion(T, n, sigma, rng):
 # MODELO FISCAL DINÁMICO
 # ==============================================================
 
-def simular_modelo(p: Parametros, seed=42) -> Dict[str, np.ndarray]:
+def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
     rng = np.random.default_rng(seed)
     shocks_gas_sim = shocks_gas(p.T, p.n_sim, p.sigma_gas, rng)
     shocks_zinc_sim = shocks_zinc(p.T, p.n_sim, p.sigma_zinc, rng)

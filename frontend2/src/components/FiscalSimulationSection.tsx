@@ -93,7 +93,34 @@ export function FiscalSimulationSection({
       if (response.estado === "exito") {
         // Transformar datos del backend al formato del frontend
         const transformedResults = transformSimulationData(response.datos);
-        onSimulationComplete(transformedResults);
+
+        // Si hay reducción de subsidios, ejecutar también simulación base
+        if (parameters.subsidyReduction > 0) {
+          const baseParams = {
+            ...backendParams,
+            reduccion_subsidios: 0, // Escenario base sin reducción
+          };
+
+          const baseResponse = await runFiscalSimulation(baseParams);
+
+          if (baseResponse.estado === "exito") {
+            const baseResults = transformSimulationData(baseResponse.datos);
+
+            // Pasar ambos resultados: base y con reducción
+            onSimulationComplete({
+              conReduccion: transformedResults,
+              base: baseResults,
+              tieneComparacion: true,
+            });
+          }
+        } else {
+          // Sin reducción, solo pasar resultados normales
+          onSimulationComplete({
+            conReduccion: transformedResults,
+            tieneComparacion: false,
+          });
+        }
+
         setCompleted(true);
       } else {
         throw new Error("Error en la simulación del backend");
