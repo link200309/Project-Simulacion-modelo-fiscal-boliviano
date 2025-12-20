@@ -14,6 +14,10 @@ export function DownloadSection({ results, parameters }: DownloadSectionProps) {
     deficitFiscal: true
   });
 
+  // Extraer datos correctos según la estructura de results
+  const datosParaDescarga = results?.conReduccion || results;
+  const tieneComparacion = results?.tieneComparacion || false;
+
   const toggleVariable = (variable: keyof typeof selectedVariables) => {
     setSelectedVariables(prev => ({
       ...prev,
@@ -22,7 +26,7 @@ export function DownloadSection({ results, parameters }: DownloadSectionProps) {
   };
 
   const downloadCSV = () => {
-    if (!results) return;
+    if (!datosParaDescarga) return;
 
     let csvContent = 'Year,Variable,Mean,P10,P50,P90\n';
 
@@ -34,8 +38,8 @@ export function DownloadSection({ results, parameters }: DownloadSectionProps) {
     };
 
     Object.entries(selectedVariables).forEach(([key, selected]) => {
-      if (selected && results[key]) {
-        results[key].forEach((row: any) => {
+      if (selected && datosParaDescarga[key]) {
+        datosParaDescarga[key].forEach((row: any) => {
           csvContent += `${row.year},${variableMap[key as keyof typeof variableMap]},${row.mean},${row.p10},${row.p50},${row.p90}\n`;
         });
       }
@@ -69,7 +73,7 @@ export function DownloadSection({ results, parameters }: DownloadSectionProps) {
     window.URL.revokeObjectURL(url);
   };
 
-  const hasResults = results && results.deudaTotal;
+  const hasResults = datosParaDescarga && datosParaDescarga.deudaTotal;
 
   return (
     <div className="bg-white rounded-xl shadow-md p-8">

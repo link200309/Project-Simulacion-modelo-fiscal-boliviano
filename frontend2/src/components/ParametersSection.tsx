@@ -22,6 +22,9 @@ interface Parameters {
   subsidyReduction: number;
   reductionType: "discrete" | "gradual";
   subsidiosBase: number;
+  pibInicial?: number;
+  tipoFinanciamiento?: "RIN" | "Deuda";
+  tasaInteresInterna?: number;
 }
 
 interface ParametersSectionProps {
@@ -40,6 +43,7 @@ export function ParametersSection({
   const [sensitivityResults, setSensitivityResults] = useState<any>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [currency, setCurrency] = useState<"Bs" | "USD">("Bs");
+  const [showAdvancedParams, setShowAdvancedParams] = useState(false);
 
   // Tipo de cambio aproximado Bs/USD (puede ajustarse)
   const EXCHANGE_RATE = 6.96;
@@ -345,6 +349,128 @@ export function ParametersSection({
             </div>
           ))}
         </div>
+
+        {/* Botón Más Parámetros */}
+        <div className="mb-6">
+          <button
+            onClick={() => setShowAdvancedParams(!showAdvancedParams)}
+            className="flex items-center gap-2 px-6 py-3 bg-[var(--bolivia-yellow)] text-[var(--gray-900)] rounded-lg hover:bg-[var(--yellow-dark)] transition-colors shadow-md"
+          >
+            <Sliders className="w-5 h-5" />
+            {showAdvancedParams ? "Ocultar" : "Más"} Parámetros
+          </button>
+        </div>
+
+        {/* Parámetros Avanzados */}
+        {showAdvancedParams && (
+          <div className="border-t-2 border-[var(--gray-200)] pt-6 mt-6">
+            <h3 className="text-[var(--gray-800)] mb-4 flex items-center gap-2">
+              <Sliders className="w-6 h-6 text-[var(--bolivia-yellow)]" />
+              Parámetros Avanzados
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* PIB Inicial */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                  PIB Inicial (2020)
+                  <div className="group relative">
+                    <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                    <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      <small>
+                        Producto Interno Bruto inicial del período de simulación
+                      </small>
+                    </div>
+                  </div>
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={convertToDisplay(
+                      localParams.pibInicial || 257600,
+                      true
+                    ).toFixed(currency === "USD" ? 2 : 0)}
+                    onChange={(e) => {
+                      const displayValue = parseFloat(e.target.value) || 0;
+                      const modelValue = convertToModel(displayValue, true);
+                      setLocalParams({
+                        ...localParams,
+                        pibInicial: modelValue,
+                      });
+                    }}
+                    className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                    step={currency === "USD" ? "0.01" : "100"}
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                    {currency === "Bs" ? "millones Bs" : "millones USD"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Tipo de Financiamiento */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                  Tipo de Financiamiento del Déficit
+                  <div className="group relative">
+                    <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                    <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      <small>
+                        Seleccione cómo se financiará el déficit: usando
+                        Reservas (RIN) o emitiendo Deuda
+                      </small>
+                    </div>
+                  </div>
+                </label>
+                <select
+                  value={localParams.tipoFinanciamiento || "Deuda"}
+                  onChange={(e) =>
+                    setLocalParams({
+                      ...localParams,
+                      tipoFinanciamiento: e.target.value as "RIN" | "Deuda",
+                    })
+                  }
+                  className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors bg-white"
+                >
+                  <option value="RIN">
+                    RIN - Usar Reservas Internacionales
+                  </option>
+                  <option value="Deuda">Deuda - Emitir deuda pública</option>
+                </select>
+              </div>
+
+              {/* Tasa de Interés Deuda Interna */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                  Tasa de Interés Deuda Interna
+                  <div className="group relative">
+                    <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                    <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      <small>
+                        Tasa de interés promedio para la deuda pública interna
+                      </small>
+                    </div>
+                  </div>
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={(localParams.tasaInteresInterna || 2.5).toFixed(1)}
+                    onChange={(e) =>
+                      setLocalParams({
+                        ...localParams,
+                        tasaInteresInterna: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                    step="0.1"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                    %
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* CORRECCIÓN 1-4: Subsección de Política Fiscal corregida */}
