@@ -1,5 +1,5 @@
-import { Zap, TrendingUp } from "lucide-react";
-import { useState } from "react";
+import { Zap, TrendingUp, RotateCcw } from "lucide-react";
+import { useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -62,14 +62,54 @@ export function StochasticShocksSection({
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Precios base editables por el usuario
-  const [preciosBase, setPreciosBase] = useState<{ [key: string]: number }>({
-    "Gas Natural": 55.0, // USD/MMBTU
-    Zinc: 2200.0, // USD/tonelada
-    Plata: 20.0, // USD/onza troy
-    Plomo: 1850.0, // USD/tonelada
-    Estaño: 17000.0, // USD/tonelada
-    Oro: 1800.0, // USD/onza troy
+  // Cargar precios base desde localStorage o usar valores por defecto
+  const [preciosBase, setPreciosBase] = useState<{ [key: string]: number }>(
+    () => {
+      const saved = localStorage.getItem("preciosBase");
+      return saved
+        ? JSON.parse(saved)
+        : {
+            "Gas Natural": 3.5, // USD/MMBTU
+            Zinc: 2200.0, // USD/tonelada
+            Plata: 20.0, // USD/onza troy
+            Plomo: 1850.0, // USD/tonelada
+            Estaño: 17000.0, // USD/tonelada
+            Oro: 1800.0, // USD/onza troy
+          };
+    }
+  );
+
+  // Mantener referencia del último objeto shocks generado
+  const [lastGeneratedShocks, setLastGeneratedShocks] = useState<any>({
+    trajectories: {},
+    bandData: {},
+    chartData: [],
+    numSimulaciones: 5000,
+    configs: shockConfigs,
+    preciosBase: {
+      "Gas Natural": 3.5,
+      Zinc: 2200.0,
+      Plata: 20.0,
+      Plomo: 1850.0,
+      Estaño: 17000.0,
+      Oro: 1800.0,
+    },
   });
+
+  // Guardar precios base en localStorage cuando cambien
+  useEffect(() => {
+    localStorage.setItem("preciosBase", JSON.stringify(preciosBase));
+  }, [preciosBase]);
+
+  // Actualizar shocks SIEMPRE que cambien los precios base (sin necesidad de generar shocks)
+  useEffect(() => {
+    const updatedShocks = {
+      ...lastGeneratedShocks,
+      preciosBase: preciosBase,
+    };
+    setLastGeneratedShocks(updatedShocks);
+    onShocksGenerated(updatedShocks);
+  }, [preciosBase]);
 
   const generateShocks = () => {
     setIsGenerating(true);
@@ -146,14 +186,17 @@ export function StochasticShocksSection({
     }
 
     setPreviewData(chartData);
-    onShocksGenerated({
+    const shocksData = {
       trajectories,
       bandData,
       chartData,
       numSimulaciones,
       configs: shockConfigs, // Pasar la configuración de shocks
       preciosBase: preciosBase, // Pasar los precios base
-    });
+    };
+
+    setLastGeneratedShocks(shocksData);
+    onShocksGenerated(shocksData);
 
     setTimeout(() => setIsGenerating(false), 500);
   };
@@ -168,6 +211,35 @@ export function StochasticShocksSection({
     setShockConfigs(newConfigs);
   };
 
+  // Función para reiniciar todos los valores a los valores por defecto
+  const resetToDefaults = () => {
+    const defaultPreciosBase = {
+      "Gas Natural": 3.5,
+      Zinc: 2200.0,
+      Plata: 20.0,
+      Plomo: 1850.0,
+      Estaño: 17000.0,
+      Oro: 1800.0,
+    };
+
+    const defaultShockConfigs = [
+      { commodity: "Gas Natural", volatilidad: 0.2, enabled: true },
+      { commodity: "Zinc", volatilidad: 0.25, enabled: true },
+      { commodity: "Plata", volatilidad: 0.3, enabled: true },
+      { commodity: "Plomo", volatilidad: 0.22, enabled: true },
+      { commodity: "Estaño", volatilidad: 0.28, enabled: true },
+      { commodity: "Oro", volatilidad: 0.18, enabled: true },
+    ];
+
+    setPreciosBase(defaultPreciosBase);
+    setShockConfigs(defaultShockConfigs);
+    setNumSimulaciones(5000);
+    setPreviewData([]);
+
+    // Limpiar localStorage
+    localStorage.removeItem("preciosBase");
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-md p-8">
       <div className="mb-6">
@@ -179,6 +251,17 @@ export function StochasticShocksSection({
           Configure los parámetros de incertidumbre para simular fluctuaciones
           en precios de commodities y su impacto en los ingresos fiscales.
         </p>
+      </div>
+
+      {/* Botón para reiniciar valores */}
+      <div className="mb-6 flex justify-end">
+        <button
+          onClick={resetToDefaults}
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--gray-100)] hover:bg-[var(--gray-200)] text-[var(--gray-700)] rounded-lg transition-colors"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Reiniciar a Valores por Defecto
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">

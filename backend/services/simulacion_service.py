@@ -5,6 +5,17 @@ def ejecutar_simulacion(parametros_usuario=None):
     if parametros_usuario is None:
         parametros = Parametros()
     else:
+        # DEBUG: Imprimir precios base recibidos
+        print("=" * 60)
+        print("PRECIOS BASE RECIBIDOS:")
+        print(f"  Gas: {parametros_usuario.get('precio_gas_base', 55.0)} USD/MMBTU")
+        print(f"  Zinc: {parametros_usuario.get('precio_zinc_base', 2200.0)} USD/ton")
+        print(f"  Plata: {parametros_usuario.get('precio_plata_base', 20.0)} USD/oz")
+        print(f"  Plomo: {parametros_usuario.get('precio_plomo_base', 1850.0)} USD/ton")
+        print(f"  Estaño: {parametros_usuario.get('precio_estano_base', 17000.0)} USD/ton")
+        print(f"  Oro: {parametros_usuario.get('precio_oro_base', 1800.0)} USD/oz")
+        print("=" * 60)
+        
         parametros = Parametros(
             PIB0=parametros_usuario.get("pib_inicial", 257_600),
             deuda_int0=parametros_usuario.get("deuda_interna", 69_300),
@@ -25,12 +36,30 @@ def ejecutar_simulacion(parametros_usuario=None):
             ingresos_plomo_0=parametros_usuario.get("ingresos_plomo_inicial", 1_500),
             ingresos_estano_0=parametros_usuario.get("ingresos_estano_inicial", 2_500),
             ingresos_oro_0=parametros_usuario.get("ingresos_oro_inicial", 3_000),
+            # Ingresos tributarios iniciales
+            ingresos_iva_0=parametros_usuario.get("ingresos_iva_inicial", 25_000),
+            ingresos_it_0=parametros_usuario.get("ingresos_it_inicial", 8_000),
+            ingresos_iue_0=parametros_usuario.get("ingresos_iue_inicial", 7_500),
+            ingresos_rc_iva_0=parametros_usuario.get("ingresos_rc_iva_inicial", 6_500),
+            ingresos_ice_0=parametros_usuario.get("ingresos_ice_inicial", 4_500),
+            ingresos_ga_0=parametros_usuario.get("ingresos_ga_inicial", 3_000),
+            ingresos_iehd_0=parametros_usuario.get("ingresos_iehd_inicial", 2_500),
+            # Ingresos no tributarios iniciales
+            ingresos_empresas_publicas_0=parametros_usuario.get("ingresos_empresas_publicas_inicial", 1_800),
+            ingresos_donaciones_0=parametros_usuario.get("ingresos_donaciones_inicial", 800),
             precio_gas_0=parametros_usuario.get("precio_gas_base", 55.0),
             precio_zinc_0=parametros_usuario.get("precio_zinc_base", 2200.0),
             precio_plata_0=parametros_usuario.get("precio_plata_base", 20.0),
             precio_plomo_0=parametros_usuario.get("precio_plomo_base", 1850.0),
             precio_estano_0=parametros_usuario.get("precio_estano_base", 17000.0),
             precio_oro_0=parametros_usuario.get("precio_oro_base", 1800.0),
+            # Parámetros de habilitación de commodities
+            gas_habilitado=parametros_usuario.get("gas_habilitado", True),
+            zinc_habilitado=parametros_usuario.get("zinc_habilitado", True),
+            plata_habilitado=parametros_usuario.get("plata_habilitado", True),
+            plomo_habilitado=parametros_usuario.get("plomo_habilitado", True),
+            estano_habilitado=parametros_usuario.get("estano_habilitado", True),
+            oro_habilitado=parametros_usuario.get("oro_habilitado", True),
             crecimiento_zinc_base=parametros_usuario.get("crecimiento_zinc", 0.012),
             crecimiento_plata_base=parametros_usuario.get("crecimiento_plata", 0.015),
             crecimiento_plomo_base=parametros_usuario.get("crecimiento_plomo", 0.010),
@@ -124,6 +153,8 @@ def ejecutar_simulacion(parametros_usuario=None):
         "ingresos_iehd": resultados["ingresos_iehd"].mean(axis=0).tolist(),
         "ingresos_otros_tributarios": resultados["ingresos_otros_tributarios"].mean(axis=0).tolist(),
         "ingresos_regalias": resultados["ingresos_regalias"].mean(axis=0).tolist(),
+        "ingresos_empresas_publicas": resultados["ingresos_empresas_publicas"].mean(axis=0).tolist(),
+        "ingresos_donaciones": resultados["ingresos_donaciones"].mean(axis=0).tolist(),
         "ingresos_otros_no_tributarios": resultados["ingresos_otros_no_tributarios"].mean(axis=0).tolist(),
         
         # Desglose de componentes del gasto

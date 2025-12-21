@@ -79,6 +79,13 @@ export function ResultsDashboard({
       return null;
     }
 
+    // Debug: verificar que los datos llegan correctamente
+    console.log("🔍 Datos de resultados:", {
+      ingresosEmpresasPublicas: resultados.ingresosEmpresasPublicas,
+      ingresosDonaciones: resultados.ingresosDonaciones,
+      ingresosOtrosNoTributarios: resultados.ingresosOtrosNoTributarios,
+    });
+
     const { deudaTotal, deudaPIB, rin, deficitFiscal, inflacion } = resultados;
 
     // Preparar datos para distribución del déficit final
@@ -197,10 +204,24 @@ export function ResultsDashboard({
     const ingresosRegaliasFinal =
       resultados.ingresosRegalias?.[resultados.ingresosRegalias.length - 1]
         ?.value || 0;
+    const ingresosEmpresasPublicasFinal =
+      resultados.ingresosEmpresasPublicas?.[
+        resultados.ingresosEmpresasPublicas.length - 1
+      ]?.value || 0;
+    const ingresosDonacionesFinal =
+      resultados.ingresosDonaciones?.[resultados.ingresosDonaciones.length - 1]
+        ?.value || 0;
     const ingresosOtrosNoTributariosFinal =
       resultados.ingresosOtrosNoTributarios?.[
         resultados.ingresosOtrosNoTributarios.length - 1
       ]?.value || 0;
+
+    // Debug: verificar valores finales
+    console.log("💰 Valores finales de ingresos no tributarios:", {
+      empresasPublicas: ingresosEmpresasPublicasFinal,
+      donaciones: ingresosDonacionesFinal,
+      otrosNoTributarios: ingresosOtrosNoTributariosFinal,
+    });
 
     // Calcular totales de ingresos tributarios
     const ingresosTributariosFinal =
@@ -241,12 +262,69 @@ export function ResultsDashboard({
       { name: "Subsidios", value: subsidioFinal, fill: "#FFC857" },
     ].filter((item) => item.value > 0);
 
-    const ingresosData = [
+    // Datos agregados por categorías de ingresos
+    const ingresosGeneralData = [
       {
-        name: "Commodities",
-        value: ingresosCommoditiesFinal,
+        name: "Ingresos por Commodities",
+        value: ingresosCommoditiesFinal + ingresosRegaliasFinal,
         fill: "#00A878",
       },
+      {
+        name: "Ingresos Tributarios",
+        value: ingresosTributariosFinal,
+        fill: "#3b82f6",
+      },
+      {
+        name: "Ingresos No Tributarios",
+        value:
+          ingresosEmpresasPublicasFinal +
+          ingresosDonacionesFinal +
+          ingresosOtrosNoTributariosFinal,
+        fill: "#f59e0b",
+      },
+    ].filter((item) => item.value > 0);
+
+    // Datos detallados de commodities (incluye regalías)
+    const commoditiesData = [
+      {
+        name: "Gas Natural",
+        value: ingresosGasFinal,
+        fill: "#00A878",
+      },
+      {
+        name: "Zinc",
+        value: ingresosZincFinal,
+        fill: "#06b6d4",
+      },
+      {
+        name: "Plata",
+        value: ingresosPlataFinal,
+        fill: "#94a3b8",
+      },
+      {
+        name: "Plomo",
+        value: ingresosPlomoFinal,
+        fill: "#64748b",
+      },
+      {
+        name: "Estaño",
+        value: ingresosEstanoFinal,
+        fill: "#475569",
+      },
+      {
+        name: "Oro",
+        value: ingresosOroFinal,
+        fill: "#fbbf24",
+      },
+      {
+        name: "Regalías",
+        value: ingresosRegaliasFinal,
+        fill: "#14b8a6",
+      },
+    ].filter((item) => item.value > 0);
+
+    // Datos detallados de ingresos tributarios
+    const tributariosData = [
       {
         name: "IVA",
         value: ingresosIVAFinal,
@@ -283,16 +361,36 @@ export function ResultsDashboard({
         fill: "#f97316",
       },
       {
-        name: "Regalías",
-        value: ingresosRegaliasFinal,
-        fill: "#14b8a6",
-      },
-      {
-        name: "Otros",
-        value: ingresosOtrosTributariosFinal + ingresosOtrosNoTributariosFinal,
+        name: "Otros Tributarios",
+        value: ingresosOtrosTributariosFinal,
         fill: "#6B7280",
       },
     ].filter((item) => item.value > 0);
+
+    // Datos detallados de ingresos no tributarios
+    const noTributariosData = [
+      {
+        name: "Empresas Públicas",
+        value: ingresosEmpresasPublicasFinal,
+        fill: "#14b8a6",
+      },
+      {
+        name: "Donaciones Internacionales",
+        value: ingresosDonacionesFinal,
+        fill: "#8b5cf6",
+      },
+      {
+        name: "Otros Ingresos No Tributarios",
+        value: ingresosOtrosNoTributariosFinal,
+        fill: "#6B7280",
+      },
+    ].filter((item) => item.value > 0);
+
+    // Debug: verificar datos de la gráfica
+    console.log(
+      "📊 Datos para gráfica de ingresos no tributarios:",
+      noTributariosData
+    );
 
     return (
       <div className="space-y-6">
@@ -788,12 +886,12 @@ export function ResultsDashboard({
 
             <div className="bg-[var(--gray-50)] rounded-lg p-6">
               <h4 className="text-[var(--gray-800)] mb-4 text-center">
-                Fuentes de Ingresos Fiscales
+                Fuentes de Ingresos Fiscales - Vista General
               </h4>
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie
-                    data={ingresosData}
+                    data={ingresosGeneralData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -802,7 +900,7 @@ export function ResultsDashboard({
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {ingresosData.map((entry, index) => (
+                    {ingresosGeneralData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
@@ -829,7 +927,171 @@ export function ResultsDashboard({
               <p className="text-[var(--gray-600)] text-center mt-2 text-sm">
                 Total:{" "}
                 {convertValue(
-                  ingresosData.reduce((acc, d) => acc + d.value, 0)
+                  ingresosGeneralData.reduce((acc, d) => acc + d.value, 0)
+                ).toFixed(0)}{" "}
+                {getCurrencyUnit()}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Desglose detallado de fuentes de ingresos */}
+        <div className="bg-white rounded-xl shadow-md p-8">
+          <h3 className="text-[var(--gray-900)] mb-6 flex items-center gap-2">
+            <PieChartIcon className="w-6 h-6 text-[var(--bolivia-green)]" />
+            Desglose Detallado de Ingresos Fiscales
+          </h3>
+          <p className="text-[var(--gray-600)] mb-6">
+            A continuación se presenta el desglose específico de cada categoría
+            de ingresos fiscales.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Commodities */}
+            <div className="bg-[var(--gray-50)] rounded-lg p-6">
+              <h4 className="text-[var(--gray-800)] mb-4 text-center font-semibold">
+                Ingresos por Commodities
+              </h4>
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={commoditiesData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                    outerRadius={70}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {commoditiesData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: any) =>
+                      `${convertValue(value).toFixed(0)} ${getCurrencyUnit()}`
+                    }
+                    contentStyle={{
+                      backgroundColor: "var(--gray-900)",
+                      border: "none",
+                      borderRadius: "8px",
+                      color: "white",
+                    }}
+                    labelStyle={{ color: "white" }}
+                    itemStyle={{ color: "white" }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={60}
+                    wrapperStyle={{ fontSize: "11px" }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <p className="text-[var(--gray-600)] text-center mt-2 text-xs">
+                Total:{" "}
+                {convertValue(
+                  commoditiesData.reduce((acc, d) => acc + d.value, 0)
+                ).toFixed(0)}{" "}
+                {getCurrencyUnit()}
+              </p>
+            </div>
+
+            {/* Ingresos Tributarios */}
+            <div className="bg-[var(--gray-50)] rounded-lg p-6">
+              <h4 className="text-[var(--gray-800)] mb-4 text-center font-semibold">
+                Ingresos Tributarios
+              </h4>
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={tributariosData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                    outerRadius={70}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {tributariosData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: any) =>
+                      `${convertValue(value).toFixed(0)} ${getCurrencyUnit()}`
+                    }
+                    contentStyle={{
+                      backgroundColor: "var(--gray-900)",
+                      border: "none",
+                      borderRadius: "8px",
+                      color: "white",
+                    }}
+                    labelStyle={{ color: "white" }}
+                    itemStyle={{ color: "white" }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={60}
+                    wrapperStyle={{ fontSize: "11px" }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <p className="text-[var(--gray-600)] text-center mt-2 text-xs">
+                Total:{" "}
+                {convertValue(
+                  tributariosData.reduce((acc, d) => acc + d.value, 0)
+                ).toFixed(0)}{" "}
+                {getCurrencyUnit()}
+              </p>
+            </div>
+
+            {/* Ingresos No Tributarios */}
+            <div className="bg-[var(--gray-50)] rounded-lg p-6">
+              <h4 className="text-[var(--gray-800)] mb-4 text-center font-semibold">
+                Ingresos No Tributarios
+              </h4>
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={noTributariosData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                    outerRadius={70}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {noTributariosData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: any) =>
+                      `${convertValue(value).toFixed(0)} ${getCurrencyUnit()}`
+                    }
+                    contentStyle={{
+                      backgroundColor: "var(--gray-900)",
+                      border: "none",
+                      borderRadius: "8px",
+                      color: "white",
+                    }}
+                    labelStyle={{ color: "white" }}
+                    itemStyle={{ color: "white" }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={60}
+                    wrapperStyle={{ fontSize: "11px" }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <p className="text-[var(--gray-600)] text-center mt-2 text-xs">
+                Total:{" "}
+                {convertValue(
+                  noTributariosData.reduce((acc, d) => acc + d.value, 0)
                 ).toFixed(0)}{" "}
                 {getCurrencyUnit()}
               </p>
@@ -1195,9 +1457,7 @@ export function ResultsDashboard({
       <div className="space-y-6">
         {/* Encabezado de comparación */}
         <div className="bg-gradient-to-r from-[var(--bolivia-green)] to-green-600 rounded-xl shadow-md p-6 text-white">
-          <h2 className="text-2xl font-bold mb-2">
-            📊 Comparación de Escenarios
-          </h2>
+          <h2 className="text-2xl font-bold mb-2">Comparación de Escenarios</h2>
           <p className="text-green-50">
             Análisis comparativo: Escenario Base vs. Escenario con Reducción de
             Subsidios

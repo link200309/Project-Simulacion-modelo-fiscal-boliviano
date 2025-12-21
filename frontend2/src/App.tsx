@@ -23,6 +23,17 @@ export default function App() {
     pibInicial: 257600,
     tipoFinanciamiento: "Deuda" as "RIN" | "Deuda",
     tasaInteresInterna: 2.5,
+    // Ingresos tributarios iniciales (millones Bs)
+    ingresosIvaInicial: 25000,
+    ingresosItInicial: 8000,
+    ingresosIueInicial: 7500,
+    ingresosRcIvaInicial: 6500,
+    ingresosIceInicial: 4500,
+    ingresosGaInicial: 3000,
+    ingresosIehdInicial: 2500,
+    // Ingresos no tributarios iniciales (millones Bs)
+    ingresosEmpresasPublicasInicial: 1800,
+    ingresosDonacionesInicial: 800,
   });
 
   const [shocks, setShocks] = useState<any>(null);

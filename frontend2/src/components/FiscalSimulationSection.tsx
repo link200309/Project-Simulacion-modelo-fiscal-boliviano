@@ -74,12 +74,32 @@ export function FiscalSimulationSection({
         sigma_plomo: plomoShock?.volatilidad || 0.22,
         sigma_estano: estanoShock?.volatilidad || 0.28,
         sigma_oro: oroShock?.volatilidad || 0.18,
-        precio_gas_base: preciosBase["Gas Natural"] || 55.0,
+        precio_gas_base: preciosBase["Gas Natural"] || 3.5,
         precio_zinc_base: preciosBase["Zinc"] || 2200.0,
         precio_plata_base: preciosBase["Plata"] || 20.0,
         precio_plomo_base: preciosBase["Plomo"] || 1850.0,
         precio_estano_base: preciosBase["Estaño"] || 17000.0,
         precio_oro_base: preciosBase["Oro"] || 1800.0,
+        // Enviar si cada commodity está habilitado (enabled)
+        gas_habilitado: gasShock?.enabled !== false,
+        zinc_habilitado: zincShock?.enabled !== false,
+        plata_habilitado: plataShock?.enabled !== false,
+        plomo_habilitado: plomoShock?.enabled !== false,
+        estano_habilitado: estanoShock?.enabled !== false,
+        oro_habilitado: oroShock?.enabled !== false,
+        // Ingresos tributarios iniciales (millones Bs)
+        ingresos_iva_inicial: parameters.ingresosIvaInicial || 25000,
+        ingresos_it_inicial: parameters.ingresosItInicial || 8000,
+        ingresos_iue_inicial: parameters.ingresosIueInicial || 7500,
+        ingresos_rc_iva_inicial: parameters.ingresosRcIvaInicial || 6500,
+        ingresos_ice_inicial: parameters.ingresosIceInicial || 4500,
+        ingresos_ga_inicial: parameters.ingresosGaInicial || 3000,
+        ingresos_iehd_inicial: parameters.ingresosIehdInicial || 2500,
+        // Ingresos no tributarios iniciales (millones Bs)
+        ingresos_empresas_publicas_inicial:
+          parameters.ingresosEmpresasPublicasInicial || 1800,
+        ingresos_donaciones_inicial:
+          parameters.ingresosDonacionesInicial || 800,
         phi_deuda: 0.02,
         n_sim: 1000,
         reduccion_subsidios: parameters.subsidyReduction / 100,

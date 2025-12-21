@@ -59,6 +59,8 @@ interface SimulationResponse {
     ingresos_iehd: number[];
     ingresos_otros_tributarios: number[];
     ingresos_regalias: number[];
+    ingresos_empresas_publicas: number[];
+    ingresos_donaciones: number[];
     ingresos_otros_no_tributarios: number[];
     gasto_corriente: number[];
     transferencias_sociales: number[];
@@ -142,6 +144,13 @@ export const getDefaultSimulation = async (): Promise<SimulationResponse> => {
  * Transform backend response to frontend format for charts
  */
 export const transformSimulationData = (data: SimulationResponse["datos"]) => {
+  // Debug: verificar datos del backend
+  console.log("🔧 Datos recibidos del backend:", {
+    ingresos_empresas_publicas: data.ingresos_empresas_publicas,
+    ingresos_donaciones: data.ingresos_donaciones,
+    ingresos_otros_no_tributarios: data.ingresos_otros_no_tributarios,
+  });
+
   const years = [2020, 2021, 2022, 2023, 2024, 2025];
 
   // Transform debt data (backend sends in millones Bs)
@@ -301,6 +310,14 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
     ingresosRegalias: years.map((year, index) => ({
       year,
       value: data.ingresos_regalias?.[index] || 0,
+    })),
+    ingresosEmpresasPublicas: years.map((year, index) => ({
+      year,
+      value: data.ingresos_empresas_publicas?.[index] || 0,
+    })),
+    ingresosDonaciones: years.map((year, index) => ({
+      year,
+      value: data.ingresos_donaciones?.[index] || 0,
     })),
     ingresosOtrosNoTributarios: years.map((year, index) => ({
       year,
