@@ -321,6 +321,10 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
       year,
       value: data.ingresos_iehd?.[index] || 0,
     })),
+    ingresosIDH: years.map((year, index) => ({
+      year,
+      value: data.ingresos_idh?.[index] || 0,
+    })),
     ingresosOtrosTributarios: years.map((year, index) => ({
       year,
       value: data.ingresos_otros_tributarios?.[index] || 0,

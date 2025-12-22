@@ -29,16 +29,18 @@ interface ResultsDashboardProps {
   results: any;
   shocks?: any;
   sensitivityAnalysis?: any;
+  tipoCambio?: number;
 }
 
 export function ResultsDashboard({
   results,
   shocks,
   sensitivityAnalysis,
+  tipoCambio,
 }: ResultsDashboardProps) {
   const [currency, setCurrency] = useState<"Bs" | "USD">("Bs");
   const [activeTab, setActiveTab] = useState<"base" | "reduccion">("base");
-  const EXCHANGE_RATE = 6.96;
+  const EXCHANGE_RATE = tipoCambio || 6.96;
 
   // Función para convertir valores monetarios
   const convertValue = (valueInMillionsBs: number): number => {
@@ -148,6 +150,19 @@ export function ResultsDashboard({
       p95: 0,
     };
 
+    // Calcular promedios de todos los años para la tabla resumen
+    const calculateAverage = (data: any[]) => {
+      if (!data || data.length === 0) return 0;
+      const sum = data.reduce((acc, item) => acc + (item.mean || 0), 0);
+      return sum / data.length;
+    };
+
+    const avgDebt = calculateAverage(deudaTotal);
+    const avgDebtGDP = calculateAverage(deudaPIB);
+    const avgRIN = calculateAverage(rin);
+    const avgDeficit = calculateAverage(deficitFiscal);
+    const avgInflacion = calculateAverage(inflacion);
+
     // Calcular datos reales de gastos e ingresos del modelo (año final 2025)
     // Los datos llegan como arrays de {year, value}
     const gastoFinal =
@@ -197,6 +212,8 @@ export function ResultsDashboard({
       resultados.ingresosGA?.[resultados.ingresosGA.length - 1]?.value || 0;
     const ingresosIEHDFinal =
       resultados.ingresosIEHD?.[resultados.ingresosIEHD.length - 1]?.value || 0;
+    const ingresosIDHFinal =
+      resultados.ingresosIDH?.[resultados.ingresosIDH.length - 1]?.value || 0;
     const ingresosOtrosTributariosFinal =
       resultados.ingresosOtrosTributarios?.[
         resultados.ingresosOtrosTributarios.length - 1
@@ -232,6 +249,7 @@ export function ResultsDashboard({
       ingresosICEFinal +
       ingresosGAFinal +
       ingresosIEHDFinal +
+      ingresosIDHFinal +
       ingresosOtrosTributariosFinal;
 
     // Obtener componentes del gasto desglosados
@@ -361,6 +379,11 @@ export function ResultsDashboard({
         fill: "#f97316",
       },
       {
+        name: "IDH",
+        value: ingresosIDHFinal,
+        fill: "#06b6d4",
+      },
+      {
         name: "Otros Tributarios",
         value: ingresosOtrosTributariosFinal,
         fill: "#6B7280",
@@ -431,7 +454,7 @@ export function ResultsDashboard({
                 </button>
               </div>
               <span className="text-xs text-[var(--gray-500)]">
-                TC: 1 USD = {EXCHANGE_RATE} Bs
+                TC: 1 USD = {EXCHANGE_RATE.toFixed(2)} Bs
               </span>
             </div>
           </div>
@@ -518,6 +541,7 @@ export function ResultsDashboard({
                 <XAxis dataKey="year" stroke="var(--gray-600)" />
                 <YAxis
                   stroke="var(--gray-600)"
+                  tickFormatter={(value) => convertValue(value).toFixed(0)}
                   label={{
                     value: getCurrencyUnit(),
                     angle: -90,
@@ -648,6 +672,7 @@ export function ResultsDashboard({
                 <XAxis dataKey="year" stroke="var(--gray-600)" />
                 <YAxis
                   stroke="var(--gray-600)"
+                  tickFormatter={(value) => convertValue(value).toFixed(0)}
                   label={{
                     value: getCurrencyUnit(),
                     angle: -90,
@@ -1398,6 +1423,7 @@ export function ResultsDashboard({
                     <XAxis dataKey="year" stroke="var(--gray-600)" />
                     <YAxis
                       stroke="var(--gray-600)"
+                      tickFormatter={(value) => convertValue(value).toFixed(0)}
                       label={{
                         value: `Subsidios (${getCurrencyUnit()})`,
                         angle: -90,
@@ -1458,6 +1484,7 @@ export function ResultsDashboard({
                       yAxisId="right"
                       orientation="right"
                       stroke="var(--gray-600)"
+                      tickFormatter={(value) => convertValue(value).toFixed(0)}
                       label={{
                         value: `Ahorro (${getCurrencyUnit()})`,
                         angle: 90,
@@ -1509,141 +1536,84 @@ export function ResultsDashboard({
         {/* Tabla resumen estadístico */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <h3 className="text-[var(--gray-800)] mb-4">
-            Resumen Estadístico - Año 2025
+            Resumen Estadístico por Año (2020-2025)
           </h3>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b-2 border-[var(--gray-300)]">
-                  <th className="text-left py-3 px-4 text-[var(--gray-700)]">
-                    Variable
+                  <th className="text-left py-3 px-3 text-[var(--gray-700)]">
+                    Año
                   </th>
-                  <th className="text-right py-3 px-4 text-[var(--gray-700)]">
-                    Media
+                  <th className="text-right py-3 px-3 text-[var(--gray-700)]">
+                    Deuda Total ({getCurrencyUnit()})
                   </th>
-                  <th className="text-right py-3 px-4 text-[var(--gray-700)]">
-                    P05
+                  <th className="text-right py-3 px-3 text-[var(--gray-700)]">
+                    Deuda/PIB (%)
                   </th>
-                  <th className="text-right py-3 px-4 text-[var(--gray-700)]">
-                    P25
+                  <th className="text-right py-3 px-3 text-[var(--gray-700)]">
+                    RIN ({getCurrencyUnit()})
                   </th>
-                  <th className="text-right py-3 px-4 text-[var(--gray-700)]">
-                    P95
+                  <th className="text-right py-3 px-3 text-[var(--gray-700)]">
+                    Déficit ({getCurrencyUnit()})
                   </th>
+                  <th className="text-right py-3 px-3 text-[var(--gray-700)]">
+                    Ingresos ({getCurrencyUnit()})
+                  </th>
+                  <th className="text-right py-3 px-3 text-[var(--gray-700)]">
+                    Gastos ({getCurrencyUnit()})
+                  </th>
+                  {inflacion && (
+                    <th className="text-right py-3 px-3 text-[var(--gray-700)]">
+                      Inflación (%)
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-[var(--gray-200)] hover:bg-[var(--gray-50)]">
-                  <td className="py-3 px-4 text-[var(--gray-900)]">
-                    Deuda Pública Total ({getCurrencyUnit()})
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {convertValue(latestDebt.mean).toFixed(
-                      currency === "USD" ? 2 : 0
-                    )}
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {convertValue(latestDebt.p05).toFixed(
-                      currency === "USD" ? 2 : 0
-                    )}
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {convertValue(latestDebt.p25).toFixed(
-                      currency === "USD" ? 2 : 0
-                    )}
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {convertValue(latestDebt.p95).toFixed(
-                      currency === "USD" ? 2 : 0
-                    )}
-                  </td>
-                </tr>
-                <tr className="border-b border-[var(--gray-200)] hover:bg-[var(--gray-50)]">
-                  <td className="py-3 px-4 text-[var(--gray-900)]">
-                    Ratio Deuda/PIB (%)
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {latestDebtGDP.mean.toFixed(2)}
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {latestDebtGDP.p05.toFixed(2)}
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {latestDebtGDP.p25.toFixed(2)}
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {latestDebtGDP.p95.toFixed(2)}
-                  </td>
-                </tr>
-                <tr className="border-b border-[var(--gray-200)] hover:bg-[var(--gray-50)]">
-                  <td className="py-3 px-4 text-[var(--gray-900)]">
-                    RIN ({getCurrencyUnit()})
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {convertValue(latestRIN.mean).toFixed(
-                      currency === "USD" ? 2 : 0
-                    )}
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {convertValue(latestRIN.p05).toFixed(
-                      currency === "USD" ? 2 : 0
-                    )}
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {convertValue(latestRIN.p25).toFixed(
-                      currency === "USD" ? 2 : 0
-                    )}
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {convertValue(latestRIN.p95).toFixed(
-                      currency === "USD" ? 2 : 0
-                    )}
-                  </td>
-                </tr>
-                <tr className="hover:bg-[var(--gray-50)]">
-                  <td className="py-3 px-4 text-[var(--gray-900)]">
-                    Déficit Fiscal ({getCurrencyUnit()})
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {convertValue(latestDeficit.mean).toFixed(
-                      currency === "USD" ? 2 : 0
-                    )}
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {convertValue(latestDeficit.p05).toFixed(
-                      currency === "USD" ? 2 : 0
-                    )}
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {convertValue(latestDeficit.p25).toFixed(
-                      currency === "USD" ? 2 : 0
-                    )}
-                  </td>
-                  <td className="text-right py-3 px-4">
-                    {convertValue(latestDeficit.p95).toFixed(
-                      currency === "USD" ? 2 : 0
-                    )}
-                  </td>
-                </tr>
-                {latestInflacion && (
-                  <tr className="border-t border-[var(--gray-200)] hover:bg-[var(--gray-50)]">
-                    <td className="py-3 px-4 text-[var(--gray-900)]">
-                      Inflación (%)
+                {deudaTotal?.map((item, index) => (
+                  <tr
+                    key={index}
+                    className="border-b border-[var(--gray-200)] hover:bg-[var(--gray-50)]"
+                  >
+                    <td className="py-3 px-3 text-[var(--gray-900)] font-medium">
+                      {item.year}
                     </td>
-                    <td className="text-right py-3 px-4">
-                      {latestInflacion.mean.toFixed(2)}
+                    <td className="text-right py-3 px-3">
+                      {convertValue(item.mean).toFixed(
+                        currency === "USD" ? 2 : 0
+                      )}
                     </td>
-                    <td className="text-right py-3 px-4">
-                      {latestInflacion.p05.toFixed(2)}
+                    <td className="text-right py-3 px-3">
+                      {deudaPIB[index]?.mean.toFixed(2)}
                     </td>
-                    <td className="text-right py-3 px-4">
-                      {latestInflacion.p25.toFixed(2)}
+                    <td className="text-right py-3 px-3">
+                      {convertValue(rin[index]?.mean || 0).toFixed(
+                        currency === "USD" ? 2 : 0
+                      )}
                     </td>
-                    <td className="text-right py-3 px-4">
-                      {latestInflacion.p95.toFixed(2)}
+                    <td className="text-right py-3 px-3">
+                      {convertValue(deficitFiscal[index]?.mean || 0).toFixed(
+                        currency === "USD" ? 2 : 0
+                      )}
                     </td>
+                    <td className="text-right py-3 px-3">
+                      {convertValue(
+                        resultados.ingresosTotales?.[index]?.value || 0
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                    </td>
+                    <td className="text-right py-3 px-3">
+                      {convertValue(
+                        resultados.gastos?.[index]?.value || 0
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                    </td>
+                    {inflacion && (
+                      <td className="text-right py-3 px-3">
+                        {inflacion[index]?.mean.toFixed(2)}
+                      </td>
+                    )}
                   </tr>
-                )}
+                ))}
               </tbody>
             </table>
           </div>
@@ -1702,8 +1672,7 @@ export function ResultsDashboard({
               <div>
                 <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 mb-6">
                   <p className="text-blue-900 font-medium">
-                    📈 Escenario Base - Proyección manteniendo subsidios
-                    actuales
+                    Escenario Base - Proyección manteniendo subsidios actuales
                   </p>
                   <p className="text-blue-700 text-sm mt-1">
                     Este escenario muestra la evolución fiscal sin aplicar

@@ -39,6 +39,7 @@ class Parametros:
     ingresos_ice_0: float = 4_500  # ICE (Impuesto a Consumos Específicos)
     ingresos_ga_0: float = 3_000  # GA (Gravamen Arancelario)
     ingresos_iehd_0: float = 2_500  # IEHD (Impuesto Especial a Hidrocarburos y Derivados)
+    ingresos_idh_0: float = 5_500  # IDH (Impuesto Directo a los Hidrocarburos)
     ingresos_otros_tributarios_0: float = 3_500  # Otros ingresos tributarios
     ingresos_regalias_0: float = 4_000
     
@@ -89,6 +90,7 @@ class Parametros:
     g_pib: float = 0.022
     i_int: float = 0.025
     i_ext: float = 0.051
+    tipo_cambio: float = 6.96  # Tipo de cambio Bs/USD
 
     # ------------------------------
     # Dinámica fiscal
@@ -107,6 +109,7 @@ class Parametros:
     elasticidad_ice: float = 0.8
     elasticidad_ga: float = 1.0
     elasticidad_iehd: float = 0.9
+    elasticidad_idh: float = 1.0
     elasticidad_otros_trib: float = 0.9
     elasticidad_regalias: float = 1.2
     elasticidad_empresas_publicas: float = 0.8
@@ -246,6 +249,7 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
     ingresos_ice = np.zeros((p.n_sim, p.T))
     ingresos_ga = np.zeros((p.n_sim, p.T))
     ingresos_iehd = np.zeros((p.n_sim, p.T))
+    ingresos_idh = np.zeros((p.n_sim, p.T))
     ingresos_otros_tributarios = np.zeros((p.n_sim, p.T))
     ingresos_regalias = np.zeros((p.n_sim, p.T))
     ingresos_empresas_publicas = np.zeros((p.n_sim, p.T))
@@ -282,7 +286,7 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
     # Calcular cantidades físicas implícitas a partir de ingresos y precios de referencia FIJOS
     # IMPORTANTE: Usamos precios de referencia fijos para que la cantidad física sea constante
     # Cuando el usuario cambia precio_*_0, cambia el precio pero NO la producción física
-    TC = 6.96  # Tipo de cambio Bs/USD (2020)
+    TC = p.tipo_cambio  # Tipo de cambio Bs/USD del usuario
     
     # Precios de referencia fijos del año 2020 (datos históricos reales)
     # Estos NO cambian aunque el usuario modifique los precios base
@@ -316,6 +320,7 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
         ice_t = p.ingresos_ice_0
         ga_t = p.ingresos_ga_0
         iehd_t = p.ingresos_iehd_0
+        idh_t = p.ingresos_idh_0
         otros_trib_t = p.ingresos_otros_tributarios_0
         regalias_t = p.ingresos_regalias_0
         empresas_publicas_t = p.ingresos_empresas_publicas_0
@@ -371,6 +376,7 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
             ice_t *= (1 + p.elasticidad_ice * p.g_pib)
             ga_t *= (1 + p.elasticidad_ga * p.g_pib)
             iehd_t *= (1 + p.elasticidad_iehd * p.g_pib)
+            idh_t *= (1 + p.elasticidad_idh * p.g_pib)
             otros_trib_t *= (1 + p.elasticidad_otros_trib * p.g_pib)
             regalias_t *= (1 + p.elasticidad_regalias * p.g_pib)
             empresas_publicas_t *= (1 + p.elasticidad_empresas_publicas * p.g_pib)
@@ -379,7 +385,7 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
             
             # Total ingresos no-commodities
             ingresos_no_commodities = (iva_t + it_t + iue_t + rc_iva_t + ice_t + 
-                                      ga_t + iehd_t + otros_trib_t + empresas_publicas_t + 
+                                      ga_t + iehd_t + idh_t + otros_trib_t + empresas_publicas_t + 
                                       donaciones_t + otros_no_trib_t + regalias_t)
             
             # Calcular precios de commodities en USD (con tendencia + shock estocástico)
@@ -616,6 +622,7 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
             ingresos_ice[s, t] = ice_t
             ingresos_ga[s, t] = ga_t
             ingresos_iehd[s, t] = iehd_t
+            ingresos_idh[s, t] = idh_t
             ingresos_otros_tributarios[s, t] = otros_trib_t
             ingresos_regalias[s, t] = regalias_t
             ingresos_empresas_publicas[s, t] = empresas_publicas_t
@@ -673,6 +680,7 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
         "ingresos_ice": ingresos_ice,
         "ingresos_ga": ingresos_ga,
         "ingresos_iehd": ingresos_iehd,
+        "ingresos_idh": ingresos_idh,
         "ingresos_otros_tributarios": ingresos_otros_tributarios,
         "ingresos_regalias": ingresos_regalias,
         "ingresos_empresas_publicas": ingresos_empresas_publicas,

@@ -44,6 +44,7 @@ def ejecutar_simulacion(parametros_usuario=None):
             ingresos_ice_0=parametros_usuario.get("ingresos_ice_inicial", 4_500),
             ingresos_ga_0=parametros_usuario.get("ingresos_ga_inicial", 3_000),
             ingresos_iehd_0=parametros_usuario.get("ingresos_iehd_inicial", 2_500),
+            ingresos_idh_0=parametros_usuario.get("ingresos_idh_inicial", 5_500),
             # Ingresos no tributarios iniciales
             ingresos_empresas_publicas_0=parametros_usuario.get("ingresos_empresas_publicas_inicial", 1_800),
             ingresos_donaciones_0=parametros_usuario.get("ingresos_donaciones_inicial", 800),
@@ -89,6 +90,7 @@ def ejecutar_simulacion(parametros_usuario=None):
             crecimiento_oro_base=parametros_usuario.get("crecimiento_oro", 0.020),
             phi_deuda=parametros_usuario.get("phi_deuda", 0.02),
             n_sim=parametros_usuario.get("n_sim", 1000),
+            tipo_cambio=parametros_usuario.get("tipo_cambio", 6.96),
             reduccion_subsidio=parametros_usuario.get("reduccion_subsidios", 0.0),
             tipo_reduccion=parametros_usuario.get("tipo_reduccion", "gradual")
         )
@@ -173,6 +175,7 @@ def ejecutar_simulacion(parametros_usuario=None):
         "ingresos_ice": resultados["ingresos_ice"].mean(axis=0).tolist(),
         "ingresos_ga": resultados["ingresos_ga"].mean(axis=0).tolist(),
         "ingresos_iehd": resultados["ingresos_iehd"].mean(axis=0).tolist(),
+        "ingresos_idh": resultados["ingresos_idh"].mean(axis=0).tolist(),
         "ingresos_otros_tributarios": resultados["ingresos_otros_tributarios"].mean(axis=0).tolist(),
         "ingresos_regalias": resultados["ingresos_regalias"].mean(axis=0).tolist(),
         "ingresos_empresas_publicas": resultados["ingresos_empresas_publicas"].mean(axis=0).tolist(),
