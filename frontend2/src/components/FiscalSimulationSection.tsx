@@ -115,6 +115,7 @@ export function FiscalSimulationSection({
           parameters.otrasTransferenciasInicial || 2000,
         phi_deuda: 0.02,
         n_sim: 1000,
+        tipo_cambio: parameters.tipoCambio || 6.96,
         reduccion_subsidios: parameters.subsidyReduction / 100,
         tipo_reduccion:
           parameters.reductionType === "discrete" ? "discreta" : "gradual",

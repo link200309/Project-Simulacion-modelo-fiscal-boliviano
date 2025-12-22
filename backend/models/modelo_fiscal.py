@@ -90,6 +90,7 @@ class Parametros:
     g_pib: float = 0.022
     i_int: float = 0.025
     i_ext: float = 0.051
+    tipo_cambio: float = 6.96  # Tipo de cambio Bs/USD
 
     # ------------------------------
     # Dinámica fiscal
@@ -285,7 +286,7 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
     # Calcular cantidades físicas implícitas a partir de ingresos y precios de referencia FIJOS
     # IMPORTANTE: Usamos precios de referencia fijos para que la cantidad física sea constante
     # Cuando el usuario cambia precio_*_0, cambia el precio pero NO la producción física
-    TC = 6.96  # Tipo de cambio Bs/USD (2020)
+    TC = p.tipo_cambio  # Tipo de cambio Bs/USD del usuario
     
     # Precios de referencia fijos del año 2020 (datos históricos reales)
     # Estos NO cambian aunque el usuario modifique los precios base

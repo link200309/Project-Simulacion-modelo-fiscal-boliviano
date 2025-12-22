@@ -23,6 +23,7 @@ export default function App() {
     pibInicial: 257600,
     tipoFinanciamiento: "RIN" as "RIN" | "Deuda",
     tasaInteresInterna: 2.5,
+    tipoCambio: 6.96,
     // Ingresos tributarios iniciales (millones Bs)
     ingresosIvaInicial: 25000,
     ingresosItInicial: 8000,
@@ -79,6 +80,7 @@ export default function App() {
             results={simulationResults}
             shocks={shocks}
             sensitivityAnalysis={sensitivityAnalysis}
+            tipoCambio={parameters.tipoCambio}
           />
         );
 

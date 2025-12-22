@@ -29,16 +29,18 @@ interface ResultsDashboardProps {
   results: any;
   shocks?: any;
   sensitivityAnalysis?: any;
+  tipoCambio?: number;
 }
 
 export function ResultsDashboard({
   results,
   shocks,
   sensitivityAnalysis,
+  tipoCambio,
 }: ResultsDashboardProps) {
   const [currency, setCurrency] = useState<"Bs" | "USD">("Bs");
   const [activeTab, setActiveTab] = useState<"base" | "reduccion">("base");
-  const EXCHANGE_RATE = 6.96;
+  const EXCHANGE_RATE = tipoCambio || 6.96;
 
   // Función para convertir valores monetarios
   const convertValue = (valueInMillionsBs: number): number => {
@@ -452,7 +454,7 @@ export function ResultsDashboard({
                 </button>
               </div>
               <span className="text-xs text-[var(--gray-500)]">
-                TC: 1 USD = {EXCHANGE_RATE} Bs
+                TC: 1 USD = {EXCHANGE_RATE.toFixed(2)} Bs
               </span>
             </div>
           </div>

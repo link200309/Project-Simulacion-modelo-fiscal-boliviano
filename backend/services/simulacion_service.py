@@ -90,6 +90,7 @@ def ejecutar_simulacion(parametros_usuario=None):
             crecimiento_oro_base=parametros_usuario.get("crecimiento_oro", 0.020),
             phi_deuda=parametros_usuario.get("phi_deuda", 0.02),
             n_sim=parametros_usuario.get("n_sim", 1000),
+            tipo_cambio=parametros_usuario.get("tipo_cambio", 6.96),
             reduccion_subsidio=parametros_usuario.get("reduccion_subsidios", 0.0),
             tipo_reduccion=parametros_usuario.get("tipo_reduccion", "gradual")
         )

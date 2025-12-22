@@ -32,6 +32,7 @@ interface Parameters {
   pibInicial?: number;
   tipoFinanciamiento?: "RIN" | "Deuda";
   tasaInteresInterna?: number;
+  tipoCambio?: number;
   // Ingresos tributarios iniciales (millones Bs)
   ingresosIvaInicial?: number;
   ingresosItInicial?: number;
@@ -73,8 +74,8 @@ export function ParametersSection({
   const [currency, setCurrency] = useState<"Bs" | "USD">("Bs");
   const [showAdvancedParams, setShowAdvancedParams] = useState(false);
 
-  // Tipo de cambio aproximado Bs/USD (puede ajustarse)
-  const EXCHANGE_RATE = 6.96;
+  // Tipo de cambio aproximado Bs/USD (usa el valor ingresado por el usuario)
+  const EXCHANGE_RATE = localParams.tipoCambio || 6.96;
 
   const handleSave = () => {
     // Los parámetros se guardan siempre en millones de Bs (unidad del modelo)
@@ -94,8 +95,9 @@ export function ParametersSection({
       reductionType: "gradual",
       subsidiosBase: 3000,
       pibInicial: 257600,
-      tipoFinanciamiento: "Deuda",
+      tipoFinanciamiento: "RIN",
       tasaInteresInterna: 2.5,
+      tipoCambio: 6.96,
       ingresosIvaInicial: 25000,
       ingresosItInicial: 8000,
       ingresosIueInicial: 7500,
@@ -371,7 +373,7 @@ export function ParametersSection({
             </button>
           </div>
           <span className="text-xs text-[var(--gray-500)]">
-            TC: 1 USD = {EXCHANGE_RATE} Bs
+            TC: 1 USD = {EXCHANGE_RATE.toFixed(2)} Bs
           </span>
         </div>
 
@@ -474,6 +476,41 @@ export function ParametersSection({
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
                     {currency === "Bs" ? "millones Bs" : "millones USD"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Tipo de Cambio */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                  Tipo de Cambio (Bs/USD)
+                  <div className="group relative">
+                    <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                    <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      <small>
+                        Tipo de cambio Bolivianos por Dólar usado para
+                        conversión de monedas y cálculos de commodities
+                      </small>
+                    </div>
+                  </div>
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={(localParams.tipoCambio || 6.96).toFixed(2)}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value) || 6.96;
+                      setLocalParams({
+                        ...localParams,
+                        tipoCambio: value,
+                      });
+                    }}
+                    className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                    step="0.01"
+                    min="0.01"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                    Bs/USD
                   </span>
                 </div>
               </div>
