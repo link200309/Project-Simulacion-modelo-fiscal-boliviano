@@ -19,9 +19,9 @@ export default function App() {
     tasaInteresExterna: 5.1,
     subsidyReduction: 0,
     reductionType: "gradual" as "discrete" | "gradual",
-    subsidiosBase: 12000,
+    subsidiosBase: 3000,
     pibInicial: 257600,
-    tipoFinanciamiento: "Deuda" as "RIN" | "Deuda",
+    tipoFinanciamiento: "RIN" as "RIN" | "Deuda",
     tasaInteresInterna: 2.5,
     // Ingresos tributarios iniciales (millones Bs)
     ingresosIvaInicial: 25000,
@@ -31,6 +31,7 @@ export default function App() {
     ingresosIceInicial: 4500,
     ingresosGaInicial: 3000,
     ingresosIehdInicial: 2500,
+    ingresosIdhInicial: 5500,
     // Ingresos no tributarios iniciales (millones Bs)
     ingresosEmpresasPublicasInicial: 1800,
     ingresosDonacionesInicial: 800,

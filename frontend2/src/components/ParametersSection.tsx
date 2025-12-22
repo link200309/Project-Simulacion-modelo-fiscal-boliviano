@@ -40,6 +40,7 @@ interface Parameters {
   ingresosIceInicial?: number;
   ingresosGaInicial?: number;
   ingresosIehdInicial?: number;
+  ingresosIdhInicial?: number;
   // Ingresos no tributarios iniciales (millones Bs)
   ingresosEmpresasPublicasInicial?: number;
   ingresosDonacionesInicial?: number;
@@ -91,7 +92,7 @@ export function ParametersSection({
       tasaInteresExterna: 5.1,
       subsidyReduction: 0,
       reductionType: "gradual",
-      subsidiosBase: 12000,
+      subsidiosBase: 3000,
       pibInicial: 257600,
       tipoFinanciamiento: "Deuda",
       tasaInteresInterna: 2.5,
@@ -102,6 +103,7 @@ export function ParametersSection({
       ingresosIceInicial: 4500,
       ingresosGaInicial: 3000,
       ingresosIehdInicial: 2500,
+      ingresosIdhInicial: 5500,
       ingresosEmpresasPublicasInicial: 1800,
       ingresosDonacionesInicial: 800,
       sueldosSalariosInicial: 28000,
@@ -806,6 +808,44 @@ export function ParametersSection({
                     </span>
                   </div>
                 </div>
+
+                {/* IDH */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    IDH (Impuesto Directo a Hidrocarburos)
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Ingresos iniciales por Impuesto Directo a los
+                          Hidrocarburos
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.ingresosIdhInicial || 5500,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          ingresosIdhInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1194,7 +1234,7 @@ export function ParametersSection({
                 <input
                   type="range"
                   min="500"
-                  max="3000"
+                  max="4000"
                   step="100"
                   value={localParams.subsidiosBase}
                   onChange={(e) => {

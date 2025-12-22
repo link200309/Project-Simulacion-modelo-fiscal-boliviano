@@ -95,6 +95,7 @@ export function FiscalSimulationSection({
         ingresos_ice_inicial: parameters.ingresosIceInicial || 4500,
         ingresos_ga_inicial: parameters.ingresosGaInicial || 3000,
         ingresos_iehd_inicial: parameters.ingresosIehdInicial || 2500,
+        ingresos_idh_inicial: parameters.ingresosIdhInicial || 5500,
         // Ingresos no tributarios iniciales (millones Bs)
         ingresos_empresas_publicas_inicial:
           parameters.ingresosEmpresasPublicasInicial || 1800,
@@ -192,65 +193,106 @@ export function FiscalSimulationSection({
           Simulación de Escenarios Fiscales
         </h2>
         <p className="text-[var(--gray-600)] mb-4">
-          El modelo fiscal integra parámetros macroeconómicos, shocks
-          estocásticos y políticas fiscales dentro de un único escenario de
-          simulación. Ejecute el modelo completo en el horizonte 2020–2025
-          incorporando:
+          El modelo fiscal estocástico simula la dinámica fiscal de Bolivia para
+          el período 2020-2025 mediante 1000 simulaciones Monte Carlo,
+          integrando shocks estocásticos en precios de commodities, políticas
+          fiscales y reglas automáticas de ajuste. El modelo proyecta:
         </p>
         <ul className="list-disc list-inside text-[var(--gray-600)] space-y-2 ml-4">
           <li>
-            Ingresos por exportación de commodities (gas natural y minerales)
-            con shocks estocásticos configurados en la sección anterior
+            <strong>Ingresos Fiscales:</strong> Incluyen commodities (gas, zinc,
+            plata, plomo, estaño, oro) con shocks lognormales, ingresos
+            tributarios (IVA, IT, IUE, RC-IVA, ICE, GA, IEHD) y no tributarios
+            (empresas públicas, donaciones)
           </li>
           <li>
-            Ingresos fiscales no relacionados con commodities (tributarios y
-            otros)
+            <strong>Gasto Público:</strong> Compuesto por gasto corriente
+            (sueldos, bienes y servicios), transferencias sociales (bonos,
+            pensiones, gobiernos subnacionales), inversión pública y subsidios a
+            combustibles
           </li>
           <li>
-            Gasto público corriente más subsidios a combustibles ajustados por
-            política fiscal
+            <strong>Dinámica de Deuda:</strong> Evolución de deuda interna y
+            externa con tasas de interés diferenciadas y prima de riesgo
+            endógena según ratio deuda/PIB
           </li>
-          <li>Servicio de deuda interna y externa con primas de riesgo</li>
-          <li>Evolución de las Reservas Internacionales Netas (RIN)</li>
-          <li>Reglas fiscales automáticas según ratio deuda/PIB</li>
+          <li>
+            <strong>Reservas Internacionales (RIN):</strong>{" "}
+            Acumulación/desacumulación según saldo fiscal y opciones de
+            financiamiento
+          </li>
+          <li>
+            <strong>Reglas Fiscales:</strong> Ajustes automáticos de austeridad
+            cuando deuda/PIB &gt; 60% o 70%
+          </li>
+          <li>
+            <strong>Inflación Endógena:</strong> Responde a choques de precios
+            de commodities, déficit fiscal y variaciones del tipo de cambio
+          </li>
         </ul>
       </div>
 
       <div className="bg-gradient-to-r from-[var(--gray-50)] to-[var(--gray-100)] border-2 border-[var(--gray-200)] rounded-lg p-6 mb-6">
         <h4 className="text-[var(--gray-800)] mb-3">
-          Ecuaciones Principales del Modelo
+          Ecuaciones Principales del Modelo Fiscal Estocástico
         </h4>
-        <div className="space-y-2 text-[var(--gray-700)] font-mono text-sm">
-          <div>
-            Ing_Minerales<sub>t</sub> = Ing_Zinc<sub>t</sub> + Ing_Plata
-            <sub>t</sub> + Ing_Plomo<sub>t</sub> + Ing_Estaño<sub>t</sub>
+        <div className="space-y-3 text-[var(--gray-700)] text-sm">
+          <div className="border-l-4 border-blue-500 pl-3">
+            <strong>Ingresos Totales:</strong>
+            <div className="font-mono mt-1">
+              Ing<sub>t</sub> = Ing_Commodities<sub>t</sub> + Ing_Tributarios
+              <sub>t</sub> + Ing_NoTributarios<sub>t</sub>
+            </div>
           </div>
-          <div>
-            Ing_Zinc<sub>t</sub> = Ing_Zinc<sub>0</sub> × (1 + g)<sup>t</sup> ×
-            Shock_Zinc<sub>t</sub>
+          <div className="border-l-4 border-green-500 pl-3">
+            <strong>Ingresos por Commodities (con shocks estocásticos):</strong>
+            <div className="font-mono mt-1">
+              Ing_Commodity<sub>t</sub> = Ing_Base<sub>0</sub> × (1 + g)
+              <sup>t</sup> × exp(ε<sub>t</sub>), &nbsp; ε<sub>t</sub> ~ N(0, σ²)
+            </div>
           </div>
-          <div>
-            Ingresos<sub>t</sub> = Ing_NoCommodities<sub>t</sub> + Ing_Gas
-            <sub>t</sub> + Ing_Minerales
-            <sub>t</sub>
+          <div className="border-l-4 border-purple-500 pl-3">
+            <strong>Gastos Totales:</strong>
+            <div className="font-mono mt-1">
+              G<sub>t</sub> = GC<sub>t</sub> + TS<sub>t</sub> + IP<sub>t</sub> +
+              Sub<sub>t</sub>
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              GC = Gasto Corriente, TS = Transferencias Sociales, IP = Inversión
+              Pública, Sub = Subsidios
+            </div>
           </div>
-          <div>
-            Gastos<sub>t</sub> = Gasto_Base<sub>t</sub> + Subsidios<sub>t</sub>
+          <div className="border-l-4 border-red-500 pl-3">
+            <strong>Déficit Fiscal:</strong>
+            <div className="font-mono mt-1">
+              D<sub>t</sub> = G<sub>t</sub> - Ing<sub>t</sub> + Int_Deuda
+              <sub>t</sub>
+            </div>
           </div>
-          <div>
-            Déficit_Primario<sub>t</sub> = Gastos<sub>t</sub> - Ingresos
-            <sub>t</sub>
+          <div className="border-l-4 border-yellow-600 pl-3">
+            <strong>Dinámica de Deuda:</strong>
+            <div className="font-mono mt-1">
+              Deuda<sub>t</sub> = Deuda<sub>t-1</sub> + D<sub>t</sub> +
+              Prima_Riesgo(Deuda/PIB<sub>t</sub>)
+            </div>
           </div>
-          <div>
-            Déficit_Total<sub>t</sub> = Déficit_Primario<sub>t</sub> + Intereses
-            <sub>t</sub>
+          <div className="border-l-4 border-indigo-500 pl-3">
+            <strong>Regla Fiscal (Austeridad):</strong>
+            <div className="font-mono mt-1">
+              Si Deuda/PIB<sub>t</sub> &gt; 0.70: GC<sub>t</sub>, TS<sub>t</sub>{" "}
+              ÷ 1.015, &nbsp; IP<sub>t</sub> × 0.95
+            </div>
+            <div className="font-mono mt-1">
+              Si Deuda/PIB<sub>t</sub> &gt; 0.60: GC<sub>t</sub>, TS<sub>t</sub>{" "}
+              ÷ 1.005, &nbsp; IP<sub>t</sub> × 0.98
+            </div>
           </div>
-          <div>
-            Deuda<sub>t</sub> = Deuda<sub>t-1</sub> + Nueva_Deuda<sub>t</sub>
-          </div>
-          <div>
-            RIN<sub>t</sub> = RIN<sub>t-1</sub> + Saldo_Cuenta_Corriente
-            <sub>t</sub> - Financiamiento_RIN<sub>t</sub>
+          <div className="border-l-4 border-teal-500 pl-3">
+            <strong>Reservas Internacionales:</strong>
+            <div className="font-mono mt-1">
+              RIN<sub>t</sub> = RIN<sub>t-1</sub> + SuperávitComercial
+              <sub>t</sub> - FinanciamientoRIN<sub>t</sub>
+            </div>
           </div>
         </div>
       </div>
