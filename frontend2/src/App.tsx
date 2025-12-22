@@ -34,6 +34,15 @@ export default function App() {
     // Ingresos no tributarios iniciales (millones Bs)
     ingresosEmpresasPublicasInicial: 1800,
     ingresosDonacionesInicial: 800,
+    // Desglose de gasto corriente (millones Bs)
+    sueldosSalariosInicial: 28000,
+    bienesServiciosInicial: 18000,
+    otrosGastosCorrientesInicial: 9000,
+    // Desglose de transferencias sociales (millones Bs)
+    bonosSocialesInicial: 5000,
+    pensionesInicial: 8000,
+    gobiernosSubnacionalesInicial: 5000,
+    otrasTransferenciasInicial: 2000,
   });
 
   const [shocks, setShocks] = useState<any>(null);

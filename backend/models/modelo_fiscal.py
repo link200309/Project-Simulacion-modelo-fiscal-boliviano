@@ -71,6 +71,17 @@ class Parametros:
     gasto_corriente_0: float = 55_000
     transferencias_sociales_0: float = 20_000
     inversion_publica_0: float = 28_000
+    
+    # Desglose de gasto corriente (millones Bs, año 2020)
+    sueldos_salarios_0: float = 28_000  # ~51% del gasto corriente
+    bienes_servicios_0: float = 18_000  # ~33% del gasto corriente
+    otros_gastos_corrientes_0: float = 9_000  # ~16% del gasto corriente
+    
+    # Desglose de transferencias sociales (millones Bs, año 2020)
+    bonos_sociales_0: float = 5_000  # ~25% de transferencias
+    pensiones_0: float = 8_000  # ~40% de transferencias
+    gobiernos_subnacionales_0: float = 5_000  # ~25% de transferencias
+    otras_transferencias_0: float = 2_000  # ~10% de transferencias
 
     # ------------------------------
     # Parámetros macroeconómicos
@@ -249,6 +260,17 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
     subsidios = np.zeros((p.n_sim, p.T))
     gasto_sin_subsidio = np.zeros((p.n_sim, p.T))
     
+    # Arrays para desglose de gasto corriente
+    sueldos_salarios = np.zeros((p.n_sim, p.T))
+    bienes_servicios = np.zeros((p.n_sim, p.T))
+    otros_gastos_corrientes = np.zeros((p.n_sim, p.T))
+    
+    # Arrays para desglose de transferencias sociales
+    bonos_sociales = np.zeros((p.n_sim, p.T))
+    pensiones = np.zeros((p.n_sim, p.T))
+    gobiernos_subnacionales = np.zeros((p.n_sim, p.T))
+    otras_transferencias = np.zeros((p.n_sim, p.T))
+    
     # Arrays para precios de commodities
     precio_gas = np.zeros((p.n_sim, p.T))
     precio_zinc = np.zeros((p.n_sim, p.T))
@@ -304,6 +326,17 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
         gasto_corriente_t = p.gasto_corriente_0
         transferencias_t = p.transferencias_sociales_0
         inversion_t = p.inversion_publica_0
+        
+        # Estados iniciales de desglose de gasto corriente
+        sueldos_salarios_t = p.sueldos_salarios_0
+        bienes_servicios_t = p.bienes_servicios_0
+        otros_gastos_corrientes_t = p.otros_gastos_corrientes_0
+        
+        # Estados iniciales de desglose de transferencias sociales
+        bonos_sociales_t = p.bonos_sociales_0
+        pensiones_t = p.pensiones_0
+        gobiernos_subnacionales_t = p.gobiernos_subnacionales_0
+        otras_transferencias_t = p.otras_transferencias_0
         
         gasto = p.gasto_total_0 - p.subsidio_0  # Gasto sin subsidio
         rin = p.RIN0
@@ -422,17 +455,44 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
             transferencias_t *= (1 + p.crecimiento_transferencias)
             inversion_t *= (1 + p.crecimiento_inversion)
             
+            # Actualizar desglose de gasto corriente (mantienen proporciones)
+            sueldos_salarios_t *= (1 + p.crecimiento_gasto_corriente)
+            bienes_servicios_t *= (1 + p.crecimiento_gasto_corriente)
+            otros_gastos_corrientes_t *= (1 + p.crecimiento_gasto_corriente)
+            
+            # Actualizar desglose de transferencias sociales (mantienen proporciones)
+            bonos_sociales_t *= (1 + p.crecimiento_transferencias)
+            pensiones_t *= (1 + p.crecimiento_transferencias)
+            gobiernos_subnacionales_t *= (1 + p.crecimiento_transferencias)
+            otras_transferencias_t *= (1 + p.crecimiento_transferencias)
+            
             # Aplicar regla fiscal si deuda es alta
             if ratio_deuda_pib > 0.70:
                 # Austeridad: reducir crecimiento del gasto
                 gasto_corriente_t /= 1.015  # Ajuste de austeridad
                 transferencias_t /= 1.015
                 inversion_t *= 0.95  # Mayor recorte en inversión
+                # Aplicar también al desglose
+                sueldos_salarios_t /= 1.015
+                bienes_servicios_t /= 1.015
+                otros_gastos_corrientes_t /= 1.015
+                bonos_sociales_t /= 1.015
+                pensiones_t /= 1.015
+                gobiernos_subnacionales_t /= 1.015
+                otras_transferencias_t /= 1.015
             elif ratio_deuda_pib > 0.60:
                 # Moderación
                 gasto_corriente_t /= 1.005
                 transferencias_t /= 1.005
                 inversion_t *= 0.98
+                # Aplicar también al desglose
+                sueldos_salarios_t /= 1.005
+                bienes_servicios_t /= 1.005
+                otros_gastos_corrientes_t /= 1.005
+                bonos_sociales_t /= 1.005
+                pensiones_t /= 1.005
+                gobiernos_subnacionales_t /= 1.005
+                otras_transferencias_t /= 1.005
             
             # Gasto total sin subsidio
             gasto = gasto_corriente_t + transferencias_t + inversion_t
@@ -567,6 +627,17 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
             transferencias_sociales[s, t] = transferencias_t
             inversion_publica[s, t] = inversion_t
             
+            # Guardar desglose de gasto corriente
+            sueldos_salarios[s, t] = sueldos_salarios_t
+            bienes_servicios[s, t] = bienes_servicios_t
+            otros_gastos_corrientes[s, t] = otros_gastos_corrientes_t
+            
+            # Guardar desglose de transferencias sociales
+            bonos_sociales[s, t] = bonos_sociales_t
+            pensiones[s, t] = pensiones_t
+            gobiernos_subnacionales[s, t] = gobiernos_subnacionales_t
+            otras_transferencias[s, t] = otras_transferencias_t
+            
             precio_gas[s, t] = precio_gas_t
             precio_zinc[s, t] = precio_zinc_t
             precio_plata[s, t] = precio_plata_t
@@ -618,5 +689,12 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
         "subsidios": subsidios,
         "gasto_corriente": gasto_corriente,
         "transferencias_sociales": transferencias_sociales,
-        "inversion_publica": inversion_publica
+        "inversion_publica": inversion_publica,
+        "sueldos_salarios": sueldos_salarios,
+        "bienes_servicios": bienes_servicios,
+        "otros_gastos_corrientes": otros_gastos_corrientes,
+        "bonos_sociales": bonos_sociales,
+        "pensiones": pensiones,
+        "gobiernos_subnacionales": gobiernos_subnacionales,
+        "otras_transferencias": otras_transferencias
     }

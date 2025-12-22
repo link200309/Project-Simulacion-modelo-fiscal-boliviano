@@ -47,6 +47,28 @@ def ejecutar_simulacion(parametros_usuario=None):
             # Ingresos no tributarios iniciales
             ingresos_empresas_publicas_0=parametros_usuario.get("ingresos_empresas_publicas_inicial", 1_800),
             ingresos_donaciones_0=parametros_usuario.get("ingresos_donaciones_inicial", 800),
+            # Desglose de gasto corriente
+            sueldos_salarios_0=parametros_usuario.get("sueldos_salarios_inicial", 28_000),
+            bienes_servicios_0=parametros_usuario.get("bienes_servicios_inicial", 18_000),
+            otros_gastos_corrientes_0=parametros_usuario.get("otros_gastos_corrientes_inicial", 9_000),
+            # Calcular gasto_corriente_0 como suma de componentes
+            gasto_corriente_0=(
+                parametros_usuario.get("sueldos_salarios_inicial", 28_000) +
+                parametros_usuario.get("bienes_servicios_inicial", 18_000) +
+                parametros_usuario.get("otros_gastos_corrientes_inicial", 9_000)
+            ),
+            # Desglose de transferencias sociales
+            bonos_sociales_0=parametros_usuario.get("bonos_sociales_inicial", 5_000),
+            pensiones_0=parametros_usuario.get("pensiones_inicial", 8_000),
+            gobiernos_subnacionales_0=parametros_usuario.get("gobiernos_subnacionales_inicial", 5_000),
+            otras_transferencias_0=parametros_usuario.get("otras_transferencias_inicial", 2_000),
+            # Calcular transferencias_sociales_0 como suma de componentes
+            transferencias_sociales_0=(
+                parametros_usuario.get("bonos_sociales_inicial", 5_000) +
+                parametros_usuario.get("pensiones_inicial", 8_000) +
+                parametros_usuario.get("gobiernos_subnacionales_inicial", 5_000) +
+                parametros_usuario.get("otras_transferencias_inicial", 2_000)
+            ),
             precio_gas_0=parametros_usuario.get("precio_gas_base", 55.0),
             precio_zinc_0=parametros_usuario.get("precio_zinc_base", 2200.0),
             precio_plata_0=parametros_usuario.get("precio_plata_base", 20.0),
@@ -161,6 +183,17 @@ def ejecutar_simulacion(parametros_usuario=None):
         "gasto_corriente": resultados["gasto_corriente"].mean(axis=0).tolist(),
         "transferencias_sociales": resultados["transferencias_sociales"].mean(axis=0).tolist(),
         "inversion_publica": resultados["inversion_publica"].mean(axis=0).tolist(),
+        
+        # Desglose de gasto corriente
+        "sueldos_salarios": resultados["sueldos_salarios"].mean(axis=0).tolist(),
+        "bienes_servicios": resultados["bienes_servicios"].mean(axis=0).tolist(),
+        "otros_gastos_corrientes": resultados["otros_gastos_corrientes"].mean(axis=0).tolist(),
+        
+        # Desglose de transferencias sociales
+        "bonos_sociales": resultados["bonos_sociales"].mean(axis=0).tolist(),
+        "pensiones": resultados["pensiones"].mean(axis=0).tolist(),
+        "gobiernos_subnacionales": resultados["gobiernos_subnacionales"].mean(axis=0).tolist(),
+        "otras_transferencias": resultados["otras_transferencias"].mean(axis=0).tolist(),
         
         # Inflación
         "inflacion_media": resultados["inflacion"].mean(axis=0).tolist(),

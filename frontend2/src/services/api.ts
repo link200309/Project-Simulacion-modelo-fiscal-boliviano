@@ -65,6 +65,13 @@ interface SimulationResponse {
     gasto_corriente: number[];
     transferencias_sociales: number[];
     inversion_publica: number[];
+    sueldos_salarios: number[];
+    bienes_servicios: number[];
+    otros_gastos_corrientes: number[];
+    bonos_sociales: number[];
+    pensiones: number[];
+    gobiernos_subnacionales: number[];
+    otras_transferencias: number[];
     inflacion_media: number[];
     inflacion_p05: number[];
     inflacion_p25: number[];
@@ -151,6 +158,17 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
     ingresos_otros_no_tributarios: data.ingresos_otros_no_tributarios,
   });
 
+  // Debug: verificar datos de desglose de gasto
+  console.log("📊 Datos de desglose de gasto recibidos:", {
+    sueldos_salarios: data.sueldos_salarios,
+    bienes_servicios: data.bienes_servicios,
+    otros_gastos_corrientes: data.otros_gastos_corrientes,
+    bonos_sociales: data.bonos_sociales,
+    pensiones: data.pensiones,
+    gobiernos_subnacionales: data.gobiernos_subnacionales,
+    otras_transferencias: data.otras_transferencias,
+  });
+
   const years = [2020, 2021, 2022, 2023, 2024, 2025];
 
   // Transform debt data (backend sends in millones Bs)
@@ -219,7 +237,7 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
     p95: (data.inflacion_p95?.[index] || 0) * 100,
   }));
 
-  return {
+  const result = {
     deudaTotal,
     deudaPIB,
     rin,
@@ -335,7 +353,50 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
       year,
       value: data.inversion_publica?.[index] || 0,
     })),
+    // Desglose de gasto corriente
+    sueldosSalarios: years.map((year, index) => ({
+      year,
+      value: data.sueldos_salarios?.[index] || 0,
+    })),
+    bienesServicios: years.map((year, index) => ({
+      year,
+      value: data.bienes_servicios?.[index] || 0,
+    })),
+    otrosGastosCorrientes: years.map((year, index) => ({
+      year,
+      value: data.otros_gastos_corrientes?.[index] || 0,
+    })),
+    // Desglose de transferencias sociales
+    bonosSociales: years.map((year, index) => ({
+      year,
+      value: data.bonos_sociales?.[index] || 0,
+    })),
+    pensiones: years.map((year, index) => ({
+      year,
+      value: data.pensiones?.[index] || 0,
+    })),
+    gobiernosSubnacionales: years.map((year, index) => ({
+      year,
+      value: data.gobiernos_subnacionales?.[index] || 0,
+    })),
+    otrasTransferencias: years.map((year, index) => ({
+      year,
+      value: data.otras_transferencias?.[index] || 0,
+    })),
   };
+
+  // Debug: verificar datos transformados
+  console.log("✅ Datos transformados (desglose):", {
+    sueldosSalarios: result.sueldosSalarios,
+    bienesServicios: result.bienesServicios,
+    otrosGastosCorrientes: result.otrosGastosCorrientes,
+    bonosSociales: result.bonosSociales,
+    pensiones: result.pensiones,
+    gobiernosSubnacionales: result.gobiernosSubnacionales,
+    otrasTransferencias: result.otrasTransferencias,
+  });
+
+  return result;
 };
 
 /**

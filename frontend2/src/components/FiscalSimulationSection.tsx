@@ -100,6 +100,18 @@ export function FiscalSimulationSection({
           parameters.ingresosEmpresasPublicasInicial || 1800,
         ingresos_donaciones_inicial:
           parameters.ingresosDonacionesInicial || 800,
+        // Desglose de gasto corriente (millones Bs)
+        sueldos_salarios_inicial: parameters.sueldosSalariosInicial || 28000,
+        bienes_servicios_inicial: parameters.bienesServiciosInicial || 18000,
+        otros_gastos_corrientes_inicial:
+          parameters.otrosGastosCorrientesInicial || 9000,
+        // Desglose de transferencias sociales (millones Bs)
+        bonos_sociales_inicial: parameters.bonosSocialesInicial || 5000,
+        pensiones_inicial: parameters.pensionesInicial || 8000,
+        gobiernos_subnacionales_inicial:
+          parameters.gobiernosSubnacionalesInicial || 5000,
+        otras_transferencias_inicial:
+          parameters.otrasTransferenciasInicial || 2000,
         phi_deuda: 0.02,
         n_sim: 1000,
         reduccion_subsidios: parameters.subsidyReduction / 100,

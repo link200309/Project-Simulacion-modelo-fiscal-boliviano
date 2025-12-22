@@ -1099,6 +1099,207 @@ export function ResultsDashboard({
           </div>
         </div>
 
+        {/* Desglose detallado de componentes del gasto */}
+        {resultados.sueldosSalarios &&
+          resultados.bienesServicios &&
+          resultados.otrosGastosCorrientes &&
+          resultados.bonosSociales &&
+          resultados.pensiones &&
+          resultados.gobiernosSubnacionales &&
+          resultados.otrasTransferencias && (
+            <div className="bg-white rounded-xl shadow-md p-8">
+              <h3 className="text-[var(--gray-900)] mb-6 flex items-center gap-2">
+                <PieChartIcon className="w-6 h-6 text-[var(--bolivia-red)]" />
+                Desglose Detallado del Gasto Público
+              </h3>
+              <p className="text-[var(--gray-600)] mb-6">
+                A continuación se presenta el desglose específico de los
+                componentes del gasto corriente y transferencias sociales.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Gasto Corriente */}
+                <div className="bg-[var(--gray-50)] rounded-lg p-6">
+                  <h4 className="text-[var(--gray-800)] mb-4 text-center">
+                    Gasto Corriente
+                  </h4>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          {
+                            name: "Sueldos y Salarios",
+                            value:
+                              resultados.sueldosSalarios[
+                                resultados.sueldosSalarios.length - 1
+                              ].value,
+                            fill: "#3b82f6",
+                          },
+                          {
+                            name: "Bienes y Servicios",
+                            value:
+                              resultados.bienesServicios[
+                                resultados.bienesServicios.length - 1
+                              ].value,
+                            fill: "#8b5cf6",
+                          },
+                          {
+                            name: "Otros Gastos Corrientes",
+                            value:
+                              resultados.otrosGastosCorrientes[
+                                resultados.otrosGastosCorrientes.length - 1
+                              ].value,
+                            fill: "#ec4899",
+                          },
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ percent }) =>
+                          `${(percent * 100).toFixed(1)}%`
+                        }
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {[
+                          { name: "Sueldos y Salarios", fill: "#3b82f6" },
+                          { name: "Bienes y Servicios", fill: "#8b5cf6" },
+                          { name: "Otros Gastos Corrientes", fill: "#ec4899" },
+                        ].map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: any) =>
+                          `${convertValue(value).toFixed(
+                            0
+                          )} ${getCurrencyUnit()}`
+                        }
+                        contentStyle={{
+                          backgroundColor: "var(--gray-900)",
+                          border: "none",
+                          borderRadius: "8px",
+                          color: "white",
+                        }}
+                        labelStyle={{ color: "white" }}
+                        itemStyle={{ color: "white" }}
+                      />
+                      <Legend
+                        verticalAlign="bottom"
+                        height={60}
+                        wrapperStyle={{ fontSize: "11px" }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <p className="text-[var(--gray-600)] text-center mt-2 text-xs">
+                    Total:{" "}
+                    {convertValue(
+                      resultados.gastoCorriente[
+                        resultados.gastoCorriente.length - 1
+                      ].value
+                    ).toFixed(0)}{" "}
+                    {getCurrencyUnit()}
+                  </p>
+                </div>
+
+                {/* Transferencias Sociales */}
+                <div className="bg-[var(--gray-50)] rounded-lg p-6">
+                  <h4 className="text-[var(--gray-800)] mb-4 text-center">
+                    Transferencias Sociales
+                  </h4>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          {
+                            name: "Bonos Sociales",
+                            value:
+                              resultados.bonosSociales[
+                                resultados.bonosSociales.length - 1
+                              ].value,
+                            fill: "#10b981",
+                          },
+                          {
+                            name: "Pensiones",
+                            value:
+                              resultados.pensiones[
+                                resultados.pensiones.length - 1
+                              ].value,
+                            fill: "#f59e0b",
+                          },
+                          {
+                            name: "Gobiernos Subnacionales",
+                            value:
+                              resultados.gobiernosSubnacionales[
+                                resultados.gobiernosSubnacionales.length - 1
+                              ].value,
+                            fill: "#6366f1",
+                          },
+                          {
+                            name: "Otras Transferencias",
+                            value:
+                              resultados.otrasTransferencias[
+                                resultados.otrasTransferencias.length - 1
+                              ].value,
+                            fill: "#ef4444",
+                          },
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ percent }) =>
+                          `${(percent * 100).toFixed(1)}%`
+                        }
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {[
+                          { name: "Bonos Sociales", fill: "#10b981" },
+                          { name: "Pensiones", fill: "#f59e0b" },
+                          { name: "Gobiernos Subnacionales", fill: "#6366f1" },
+                          { name: "Otras Transferencias", fill: "#ef4444" },
+                        ].map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: any) =>
+                          `${convertValue(value).toFixed(
+                            0
+                          )} ${getCurrencyUnit()}`
+                        }
+                        contentStyle={{
+                          backgroundColor: "var(--gray-900)",
+                          border: "none",
+                          borderRadius: "8px",
+                          color: "white",
+                        }}
+                        labelStyle={{ color: "white" }}
+                        itemStyle={{ color: "white" }}
+                      />
+                      <Legend
+                        verticalAlign="bottom"
+                        height={60}
+                        wrapperStyle={{ fontSize: "11px" }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <p className="text-[var(--gray-600)] text-center mt-2 text-xs">
+                    Total:{" "}
+                    {convertValue(
+                      resultados.transferenciasSociales[
+                        resultados.transferenciasSociales.length - 1
+                      ].value
+                    ).toFixed(0)}{" "}
+                    {getCurrencyUnit()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
         {/* CORRECCIÓN 5: Resultados Complementarios */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl shadow-md p-8">
           <h3 className="text-[var(--gray-900)] mb-6 flex items-center gap-2">
