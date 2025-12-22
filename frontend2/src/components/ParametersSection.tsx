@@ -1,4 +1,11 @@
-import { Save, Info, Sliders, BarChart3, TrendingDown } from "lucide-react";
+import {
+  Save,
+  Info,
+  Sliders,
+  BarChart3,
+  TrendingDown,
+  RotateCcw,
+} from "lucide-react";
 import { useState } from "react";
 import {
   LineChart,
@@ -25,6 +32,26 @@ interface Parameters {
   pibInicial?: number;
   tipoFinanciamiento?: "RIN" | "Deuda";
   tasaInteresInterna?: number;
+  // Ingresos tributarios iniciales (millones Bs)
+  ingresosIvaInicial?: number;
+  ingresosItInicial?: number;
+  ingresosIueInicial?: number;
+  ingresosRcIvaInicial?: number;
+  ingresosIceInicial?: number;
+  ingresosGaInicial?: number;
+  ingresosIehdInicial?: number;
+  // Ingresos no tributarios iniciales (millones Bs)
+  ingresosEmpresasPublicasInicial?: number;
+  ingresosDonacionesInicial?: number;
+  // Desglose de gasto corriente (millones Bs)
+  sueldosSalariosInicial?: number;
+  bienesServiciosInicial?: number;
+  otrosGastosCorrientesInicial?: number;
+  // Desglose de transferencias sociales (millones Bs)
+  bonosSocialesInicial?: number;
+  pensionesInicial?: number;
+  gobiernosSubnacionalesInicial?: number;
+  otrasTransferenciasInicial?: number;
 }
 
 interface ParametersSectionProps {
@@ -53,6 +80,39 @@ export function ParametersSection({
     onParametersChange(localParams);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const resetToDefaults = () => {
+    const defaults: Parameters = {
+      deudaInternaInicial: 69300,
+      deudaExternaInicial: 82800,
+      rinInicial: 36900,
+      tasaCrecimientoPIB: 2.2,
+      tasaInteresExterna: 5.1,
+      subsidyReduction: 0,
+      reductionType: "gradual",
+      subsidiosBase: 12000,
+      pibInicial: 257600,
+      tipoFinanciamiento: "Deuda",
+      tasaInteresInterna: 2.5,
+      ingresosIvaInicial: 25000,
+      ingresosItInicial: 8000,
+      ingresosIueInicial: 7500,
+      ingresosRcIvaInicial: 6500,
+      ingresosIceInicial: 4500,
+      ingresosGaInicial: 3000,
+      ingresosIehdInicial: 2500,
+      ingresosEmpresasPublicasInicial: 1800,
+      ingresosDonacionesInicial: 800,
+      sueldosSalariosInicial: 28000,
+      bienesServiciosInicial: 18000,
+      otrosGastosCorrientesInicial: 9000,
+      bonosSocialesInicial: 5000,
+      pensionesInicial: 8000,
+      gobiernosSubnacionalesInicial: 5000,
+      otrasTransferenciasInicial: 2000,
+    };
+    setLocalParams(defaults);
   };
 
   // Convertir valor del modelo (millones Bs) a la unidad seleccionada para mostrar
@@ -276,26 +336,36 @@ export function ParametersSection({
             <Info className="w-4 h-4" />
             Unidad de visualización:
           </label>
-          <div className="flex gap-2 bg-[var(--gray-100)] rounded-lg p-1">
+          <div className="flex gap-3 items-center">
+            <div className="flex gap-2 bg-[var(--gray-100)] rounded-lg p-1">
+              <button
+                onClick={() => setCurrency("Bs")}
+                className={`px-3 py-1 rounded text-sm font-medium transition-all p-3 ${
+                  currency === "Bs"
+                    ? "bg-white text-[var(--gray-900)] shadow-sm"
+                    : "text-[var(--gray-600)] hover:text-[var(--gray-900)]"
+                }`}
+              >
+                Bs
+              </button>
+              <button
+                onClick={() => setCurrency("USD")}
+                className={`px-3 py-1 rounded text-sm font-medium transition-all p-3 ${
+                  currency === "USD"
+                    ? "bg-white text-[var(--gray-900)] shadow-sm"
+                    : "text-[var(--gray-600)] hover:text-[var(--gray-900)]"
+                }`}
+              >
+                USD
+              </button>
+            </div>
             <button
-              onClick={() => setCurrency("Bs")}
-              className={`px-3 py-1 rounded text-sm font-medium transition-all p-3 ${
-                currency === "Bs"
-                  ? "bg-white text-[var(--gray-900)] shadow-sm"
-                  : "text-[var(--gray-600)] hover:text-[var(--gray-900)]"
-              }`}
+              onClick={resetToDefaults}
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--gray-100)] text-[var(--gray-700)] rounded-lg hover:bg-[var(--gray-200)] transition-colors text-sm"
+              title="Reiniciar a valores por defecto"
             >
-              Bs
-            </button>
-            <button
-              onClick={() => setCurrency("USD")}
-              className={`px-3 py-1 rounded text-sm font-medium transition-all p-3 ${
-                currency === "USD"
-                  ? "bg-white text-[var(--gray-900)] shadow-sm"
-                  : "text-[var(--gray-600)] hover:text-[var(--gray-900)]"
-              }`}
-            >
-              USD
+              <RotateCcw className="w-4 h-4" />
+              Reiniciar
             </button>
           </div>
           <span className="text-xs text-[var(--gray-500)]">
@@ -466,6 +536,633 @@ export function ParametersSection({
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
                     %
                   </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Ingresos Iniciales - Tributarios */}
+            <div className="border-t border-[var(--gray-200)] pt-6 mt-6">
+              <h4 className="text-[var(--gray-800)] mb-4 font-semibold">
+                Ingresos Tributarios Iniciales
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* IVA */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    IVA (Impuesto al Valor Agregado)
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Ingresos iniciales por Impuesto al Valor Agregado
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.ingresosIvaInicial || 25000,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          ingresosIvaInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* IT */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    IT (Impuestos a Transacciones)
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Ingresos iniciales por Impuestos a las Transacciones
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.ingresosItInicial || 8000,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          ingresosItInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* IUE */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    IUE (Impuesto sobre Utilidades)
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Ingresos iniciales por Impuesto sobre Utilidades de
+                          Empresas
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.ingresosIueInicial || 7500,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          ingresosIueInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* RC-IVA */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    RC-IVA (Régimen Complementario)
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Ingresos iniciales por Régimen Complementario al IVA
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.ingresosRcIvaInicial || 6500,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          ingresosRcIvaInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* ICE */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    ICE (Consumos Específicos)
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Ingresos iniciales por Impuesto a Consumos Específicos
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.ingresosIceInicial || 4500,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          ingresosIceInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* GA */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    GA (Gravamen Arancelario)
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Ingresos iniciales por Gravamen Arancelario
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.ingresosGaInicial || 3000,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          ingresosGaInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* IEHD */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    IEHD (Hidrocarburos y Derivados)
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Ingresos iniciales por Impuesto Especial a
+                          Hidrocarburos y Derivados
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.ingresosIehdInicial || 2500,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          ingresosIehdInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Ingresos Iniciales - No Tributarios */}
+            <div className="border-t border-[var(--gray-200)] pt-6 mt-6">
+              <h4 className="text-[var(--gray-800)] mb-4 font-semibold">
+                Ingresos No Tributarios Iniciales
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Empresas Públicas */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    Empresas Públicas
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Ingresos iniciales provenientes de empresas públicas
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.ingresosEmpresasPublicasInicial || 1800,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          ingresosEmpresasPublicasInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Donaciones */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    Donaciones
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Ingresos iniciales por donaciones internacionales
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.ingresosDonacionesInicial || 800,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          ingresosDonacionesInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Desglose de Gasto Corriente */}
+            <div className="border-t border-[var(--gray-200)] pt-6 mt-6">
+              <h4 className="text-[var(--gray-800)] mb-4 font-semibold">
+                Componentes del Gasto Corriente Inicial
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Sueldos y Salarios */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    Sueldos y Salarios
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Gasto inicial en sueldos y salarios del sector público
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.sueldosSalariosInicial || 28000,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          sueldosSalariosInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Bienes y Servicios */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    Bienes y Servicios
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Gasto inicial en compra de bienes y servicios
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.bienesServiciosInicial || 18000,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          bienesServiciosInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Otros Gastos Corrientes */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    Otros Gastos Corrientes
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>Otros gastos corrientes no clasificados</small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.otrosGastosCorrientesInicial || 9000,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          otrosGastosCorrientesInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Desglose de Transferencias Sociales */}
+            <div className="border-t border-[var(--gray-200)] pt-6 mt-6">
+              <h4 className="text-[var(--gray-800)] mb-4 font-semibold">
+                Componentes de Transferencias Sociales Iniciales
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Bonos Sociales */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    Bonos Sociales
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Transferencias iniciales para bonos sociales (Bono
+                          Juancito Pinto, Juana Azurduy, etc.)
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.bonosSocialesInicial || 5000,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          bonosSocialesInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Pensiones */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    Pensiones
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Transferencias iniciales para pensiones (Renta
+                          Dignidad, etc.)
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.pensionesInicial || 8000,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          pensionesInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Gobiernos Subnacionales */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    Gobiernos Subnacionales
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Transferencias iniciales a gobiernos departamentales y
+                          municipales
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.gobiernosSubnacionalesInicial || 5000,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          gobiernosSubnacionalesInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Otras Transferencias */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[var(--gray-700)]">
+                    Otras Transferencias
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-[var(--gray-400)] cursor-help" />
+                      <div className="absolute left-0 top-6 w-64 p-3 bg-[var(--gray-900)] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <small>
+                          Otras transferencias sociales no clasificadas
+                        </small>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertToDisplay(
+                        localParams.otrasTransferenciasInicial || 2000,
+                        true
+                      ).toFixed(currency === "USD" ? 2 : 0)}
+                      onChange={(e) => {
+                        const displayValue = parseFloat(e.target.value) || 0;
+                        const modelValue = convertToModel(displayValue, true);
+                        setLocalParams({
+                          ...localParams,
+                          otrasTransferenciasInicial: modelValue,
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-[var(--gray-300)] rounded-lg focus:outline-none focus:border-[var(--bolivia-green)] transition-colors"
+                      step={currency === "USD" ? "0.01" : "100"}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-500)]">
+                      {currency === "Bs" ? "millones Bs" : "millones USD"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

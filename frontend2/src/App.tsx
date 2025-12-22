@@ -23,6 +23,26 @@ export default function App() {
     pibInicial: 257600,
     tipoFinanciamiento: "Deuda" as "RIN" | "Deuda",
     tasaInteresInterna: 2.5,
+    // Ingresos tributarios iniciales (millones Bs)
+    ingresosIvaInicial: 25000,
+    ingresosItInicial: 8000,
+    ingresosIueInicial: 7500,
+    ingresosRcIvaInicial: 6500,
+    ingresosIceInicial: 4500,
+    ingresosGaInicial: 3000,
+    ingresosIehdInicial: 2500,
+    // Ingresos no tributarios iniciales (millones Bs)
+    ingresosEmpresasPublicasInicial: 1800,
+    ingresosDonacionesInicial: 800,
+    // Desglose de gasto corriente (millones Bs)
+    sueldosSalariosInicial: 28000,
+    bienesServiciosInicial: 18000,
+    otrosGastosCorrientesInicial: 9000,
+    // Desglose de transferencias sociales (millones Bs)
+    bonosSocialesInicial: 5000,
+    pensionesInicial: 8000,
+    gobiernosSubnacionalesInicial: 5000,
+    otrasTransferenciasInicial: 2000,
   });
 
   const [shocks, setShocks] = useState<any>(null);
