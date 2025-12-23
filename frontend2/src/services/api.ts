@@ -35,6 +35,8 @@ interface SimulationResponse {
   estado: string;
   datos: {
     deuda_media: number[];
+    deuda_interna_media: number[];
+    deuda_externa_media: number[];
     ratio_deuda_pib: number[];
     rin_media: number[];
     deficit_final: number[];
@@ -184,6 +186,18 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
     p95: (data.deuda_media[index] || 0) * 1.2,
   }));
 
+  // Transform internal debt data
+  const deudaInterna = years.map((year, index) => ({
+    year,
+    value: data.deuda_interna_media?.[index] || 0,
+  }));
+
+  // Transform external debt data
+  const deudaExterna = years.map((year, index) => ({
+    year,
+    value: data.deuda_externa_media?.[index] || 0,
+  }));
+
   // Transform debt to GDP ratio (already in percentage)
   const deudaPIB = years.map((year, index) => ({
     year,
@@ -239,6 +253,8 @@ export const transformSimulationData = (data: SimulationResponse["datos"]) => {
 
   const result = {
     deudaTotal,
+    deudaInterna,
+    deudaExterna,
     deudaPIB,
     rin,
     deficitFiscal,

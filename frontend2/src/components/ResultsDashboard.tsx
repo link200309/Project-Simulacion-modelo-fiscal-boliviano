@@ -88,7 +88,15 @@ export function ResultsDashboard({
       ingresosOtrosNoTributarios: resultados.ingresosOtrosNoTributarios,
     });
 
-    const { deudaTotal, deudaPIB, rin, deficitFiscal, inflacion } = resultados;
+    const {
+      deudaTotal,
+      deudaInterna,
+      deudaExterna,
+      deudaPIB,
+      rin,
+      deficitFiscal,
+      inflacion,
+    } = resultados;
 
     // Preparar datos para distribución del déficit final
     const finalDeficit = deficitFiscal?.[deficitFiscal.length - 1];
@@ -602,6 +610,67 @@ export function ResultsDashboard({
             </p>
           </div>
 
+          {/* Comparación Deuda Interna vs Externa */}
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <h3 className="text-[var(--gray-800)] mb-4">
+              Composición de la Deuda: Interna vs Externa
+            </h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart
+                data={deudaInterna?.map((item, index) => ({
+                  year: item.year,
+                  interna: item.value,
+                  externa: deudaExterna?.[index]?.value || 0,
+                }))}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-300)" />
+                <XAxis dataKey="year" stroke="var(--gray-600)" />
+                <YAxis
+                  stroke="var(--gray-600)"
+                  tickFormatter={(value) => convertValue(value).toFixed(0)}
+                  label={{
+                    value: getCurrencyUnit(),
+                    angle: -90,
+                    position: "insideLeft",
+                  }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--gray-900)",
+                    border: "none",
+                    borderRadius: "8px",
+                    color: "white",
+                  }}
+                  formatter={(value: any) =>
+                    `${convertValue(value).toFixed(0)} ${getCurrencyUnit()}`
+                  }
+                />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey="interna"
+                  stackId="1"
+                  stroke="#3b82f6"
+                  fill="#3b82f6"
+                  fillOpacity={0.6}
+                  name="Deuda Interna"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="externa"
+                  stackId="1"
+                  stroke="#D72638"
+                  fill="#D72638"
+                  fillOpacity={0.6}
+                  name="Deuda Externa"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+            <p className="text-[var(--gray-500)] mt-2 text-center">
+              <small>Composición apilada de la deuda pública total</small>
+            </p>
+          </div>
+
           {/* Ratio Deuda/PIB */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <h3 className="text-[var(--gray-800)] mb-4">
@@ -784,6 +853,69 @@ export function ResultsDashboard({
             </p>
           </div>
 
+          {/* Evolución del Déficit Fiscal */}
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <h3 className="text-[var(--gray-800)] mb-4">
+              Evolución del Déficit Fiscal
+            </h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={deficitFiscal}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-300)" />
+                <XAxis dataKey="year" stroke="var(--gray-600)" />
+                <YAxis
+                  stroke="var(--gray-600)"
+                  tickFormatter={(value) => convertValue(value).toFixed(0)}
+                  label={{
+                    value: getCurrencyUnit(),
+                    angle: -90,
+                    position: "insideLeft",
+                  }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--gray-900)",
+                    border: "none",
+                    borderRadius: "8px",
+                    color: "white",
+                  }}
+                  formatter={(value: any) =>
+                    `${convertValue(value).toFixed(0)} ${getCurrencyUnit()}`
+                  }
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="p90"
+                  stroke="#fca5a5"
+                  strokeWidth={1}
+                  strokeDasharray="5 5"
+                  name="P90"
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="mean"
+                  stroke="#f97316"
+                  strokeWidth={3}
+                  name="Media"
+                  dot={{ fill: "#f97316", r: 4 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="p10"
+                  stroke="#ea580c"
+                  strokeWidth={1}
+                  strokeDasharray="5 5"
+                  name="P10"
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+            <p className="text-[var(--gray-500)] mt-2 text-center">
+              <small>Déficit fiscal total</small>
+            </p>
+          </div>
+
           {/* Inflación */}
           {inflacion && (
             <div className="bg-white rounded-xl shadow-md p-6">
@@ -845,7 +977,7 @@ export function ResultsDashboard({
               <p className="text-[var(--gray-500)] mt-2 text-center">
                 <small>
                   Inflación influenciada por déficit fiscal y precios
-                  internacionales (efecto parcial en tasas de interés)
+                  internacionales
                 </small>
               </p>
             </div>
@@ -1407,7 +1539,7 @@ export function ResultsDashboard({
           {sensitivityAnalysis && (
             <div className="space-y-6">
               <h4 className="text-[var(--gray-800)]">
-                📈 Análisis de Sensibilidad: Impacto de Política de Subsidios
+                Análisis de Sensibilidad: Impacto de Política de Subsidios
               </h4>
 
               <div className="bg-white rounded-lg p-6">

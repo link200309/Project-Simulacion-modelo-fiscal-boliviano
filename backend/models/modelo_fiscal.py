@@ -144,6 +144,22 @@ class Parametros:
     sigma_estano: float = 0.28
     sigma_oro: float = 0.18
     sigma_precios: float = 0.25
+    
+    # Volatilidades de componentes del gasto
+    sigma_gasto_corriente: float = 0.08
+    sigma_transferencias: float = 0.10
+    sigma_inversion: float = 0.15
+    
+    # Volatilidades de sub-componentes de gasto corriente
+    sigma_sueldos_salarios: float = 0.05
+    sigma_bienes_servicios: float = 0.12
+    sigma_otros_gastos_corrientes: float = 0.10
+    
+    # Volatilidades de sub-componentes de transferencias sociales
+    sigma_bonos_sociales: float = 0.08
+    sigma_pensiones: float = 0.06
+    sigma_gobiernos_subnacionales: float = 0.09
+    sigma_otras_transferencias: float = 0.14
 
     # ------------------------------
     # Riesgo y financiamiento
@@ -208,6 +224,56 @@ def shocks_inflacion(T, n, sigma, rng):
     return rng.normal(0, sigma, size=(n, T))
 
 
+def shocks_gasto_corriente(T, n, sigma, rng):
+    Z = rng.normal(0, sigma, size=(n, T))
+    return np.exp(Z - sigma**2 / 2)
+
+
+def shocks_transferencias(T, n, sigma, rng):
+    Z = rng.normal(0, sigma, size=(n, T))
+    return np.exp(Z - sigma**2 / 2)
+
+
+def shocks_inversion(T, n, sigma, rng):
+    Z = rng.normal(0, sigma, size=(n, T))
+    return np.exp(Z - sigma**2 / 2)
+
+
+def shocks_sueldos_salarios(T, n, sigma, rng):
+    Z = rng.normal(0, sigma, size=(n, T))
+    return np.exp(Z - sigma**2 / 2)
+
+
+def shocks_bienes_servicios(T, n, sigma, rng):
+    Z = rng.normal(0, sigma, size=(n, T))
+    return np.exp(Z - sigma**2 / 2)
+
+
+def shocks_otros_gastos_corrientes(T, n, sigma, rng):
+    Z = rng.normal(0, sigma, size=(n, T))
+    return np.exp(Z - sigma**2 / 2)
+
+
+def shocks_bonos_sociales(T, n, sigma, rng):
+    Z = rng.normal(0, sigma, size=(n, T))
+    return np.exp(Z - sigma**2 / 2)
+
+
+def shocks_pensiones(T, n, sigma, rng):
+    Z = rng.normal(0, sigma, size=(n, T))
+    return np.exp(Z - sigma**2 / 2)
+
+
+def shocks_gobiernos_subnacionales(T, n, sigma, rng):
+    Z = rng.normal(0, sigma, size=(n, T))
+    return np.exp(Z - sigma**2 / 2)
+
+
+def shocks_otras_transferencias(T, n, sigma, rng):
+    Z = rng.normal(0, sigma, size=(n, T))
+    return np.exp(Z - sigma**2 / 2)
+
+
 # ==============================================================
 # MODELO FISCAL DINÁMICO
 # ==============================================================
@@ -222,6 +288,20 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
     shocks_oro_sim = shocks_oro(p.T, p.n_sim, p.sigma_oro, rng)
     shocks_precios = shocks_precios_combustibles(p.T, p.n_sim, p.sigma_precios, rng)
     shocks_inflacion_sim = shocks_inflacion(p.T, p.n_sim, p.sigma_inflacion, rng)
+    shocks_gasto_corriente_sim = shocks_gasto_corriente(p.T, p.n_sim, p.sigma_gasto_corriente, rng)
+    shocks_transferencias_sim = shocks_transferencias(p.T, p.n_sim, p.sigma_transferencias, rng)
+    shocks_inversion_sim = shocks_inversion(p.T, p.n_sim, p.sigma_inversion, rng)
+    
+    # Shocks para sub-componentes de gasto corriente
+    shocks_sueldos_salarios_sim = shocks_sueldos_salarios(p.T, p.n_sim, p.sigma_sueldos_salarios, rng)
+    shocks_bienes_servicios_sim = shocks_bienes_servicios(p.T, p.n_sim, p.sigma_bienes_servicios, rng)
+    shocks_otros_gastos_corrientes_sim = shocks_otros_gastos_corrientes(p.T, p.n_sim, p.sigma_otros_gastos_corrientes, rng)
+    
+    # Shocks para sub-componentes de transferencias sociales
+    shocks_bonos_sociales_sim = shocks_bonos_sociales(p.T, p.n_sim, p.sigma_bonos_sociales, rng)
+    shocks_pensiones_sim = shocks_pensiones(p.T, p.n_sim, p.sigma_pensiones, rng)
+    shocks_gobiernos_subnacionales_sim = shocks_gobiernos_subnacionales(p.T, p.n_sim, p.sigma_gobiernos_subnacionales, rng)
+    shocks_otras_transferencias_sim = shocks_otras_transferencias(p.T, p.n_sim, p.sigma_otras_transferencias, rng)
 
     # Arrays para guardar resultados
     deuda_interna = np.zeros((p.n_sim, p.T))
@@ -456,21 +536,21 @@ def simular_modelo(p: Parametros, seed=None) -> Dict[str, np.ndarray]:
             # ============================================
             # 5. GASTO (sin subsidio) con regla fiscal
             # ============================================
-            # Componentes del gasto crecen según sus tasas específicas
-            gasto_corriente_t *= (1 + p.crecimiento_gasto_corriente)
-            transferencias_t *= (1 + p.crecimiento_transferencias)
-            inversion_t *= (1 + p.crecimiento_inversion)
+            # Componentes del gasto crecen según sus tasas específicas + shocks estocásticos
+            gasto_corriente_t *= (1 + p.crecimiento_gasto_corriente) * shocks_gasto_corriente_sim[s, t]
+            transferencias_t *= (1 + p.crecimiento_transferencias) * shocks_transferencias_sim[s, t]
+            inversion_t *= (1 + p.crecimiento_inversion) * shocks_inversion_sim[s, t]
             
-            # Actualizar desglose de gasto corriente (mantienen proporciones)
-            sueldos_salarios_t *= (1 + p.crecimiento_gasto_corriente)
-            bienes_servicios_t *= (1 + p.crecimiento_gasto_corriente)
-            otros_gastos_corrientes_t *= (1 + p.crecimiento_gasto_corriente)
+            # Actualizar desglose de gasto corriente (con shocks INDEPENDIENTES)
+            sueldos_salarios_t *= (1 + p.crecimiento_gasto_corriente) * shocks_sueldos_salarios_sim[s, t]
+            bienes_servicios_t *= (1 + p.crecimiento_gasto_corriente) * shocks_bienes_servicios_sim[s, t]
+            otros_gastos_corrientes_t *= (1 + p.crecimiento_gasto_corriente) * shocks_otros_gastos_corrientes_sim[s, t]
             
-            # Actualizar desglose de transferencias sociales (mantienen proporciones)
-            bonos_sociales_t *= (1 + p.crecimiento_transferencias)
-            pensiones_t *= (1 + p.crecimiento_transferencias)
-            gobiernos_subnacionales_t *= (1 + p.crecimiento_transferencias)
-            otras_transferencias_t *= (1 + p.crecimiento_transferencias)
+            # Actualizar desglose de transferencias sociales (con shocks INDEPENDIENTES)
+            bonos_sociales_t *= (1 + p.crecimiento_transferencias) * shocks_bonos_sociales_sim[s, t]
+            pensiones_t *= (1 + p.crecimiento_transferencias) * shocks_pensiones_sim[s, t]
+            gobiernos_subnacionales_t *= (1 + p.crecimiento_transferencias) * shocks_gobiernos_subnacionales_sim[s, t]
+            otras_transferencias_t *= (1 + p.crecimiento_transferencias) * shocks_otras_transferencias_sim[s, t]
             
             # Aplicar regla fiscal si deuda es alta
             if ratio_deuda_pib > 0.70:
