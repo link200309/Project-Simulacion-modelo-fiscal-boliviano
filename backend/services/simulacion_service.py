@@ -104,6 +104,8 @@ def ejecutar_simulacion(parametros_usuario=None):
     # Datos principales (media)
     salida = {
         "deuda_media": resultados["deuda_total"].mean(axis=0).tolist(),
+        "deuda_interna_media": resultados["deuda_interna"].mean(axis=0).tolist(),
+        "deuda_externa_media": resultados["deuda_externa"].mean(axis=0).tolist(),
         "ratio_deuda_pib": resultados["ratio_deuda_pib"].mean(axis=0).tolist(),
         "rin_media": resultados["RIN"].mean(axis=0).tolist(),
         "deficit_final": resultados["deficit"].mean(axis=0).tolist(),
