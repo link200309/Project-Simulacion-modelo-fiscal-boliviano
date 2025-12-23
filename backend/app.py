@@ -1,17 +1,17 @@
 from flask import Flask
+from flask_cors import CORS
+from routes.simulacion_routes import simulacion_bp
 
-app = Flask(__name__)
+def crear_app():
+    app = Flask(__name__)
 
-@app.route("/")
-def home():
-    return {
-        "status": "ok",
-        "mensaje": "Servidor del simulador fiscal boliviano activo"
-    }
+    CORS(app, resources={r"/*": {"origins": "*"}})
+
+    app.register_blueprint(simulacion_bp, url_prefix="")
+
+    return app
+
+app = crear_app()
 
 if __name__ == "__main__":
-    app.run(
-        debug=True,      # Modo desarrollo
-        host="127.0.0.1",# Localhost
-        port=5000        # Puerto estándar Flask
-    )
+    app.run(debug=True, host="0.0.0.0", port=5000)
